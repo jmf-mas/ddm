@@ -50,8 +50,7 @@ def train(train, train_loader, K=5, batch_size = 32, lr = 1e-2, w_d = 1e-5, mome
     
 def test(models, data, device, eps):
     criterion = nn.MSELoss(reduction='none')
-    std_values = []
-    mean_values = []
+    losses = []
     for x in data:
         values = []
         for model in models:
@@ -60,7 +59,6 @@ def test(models, data, device, eps):
             loss = criterion(xi.to(device), xi_)
             loss = torch.mean(loss, 0)
             values.append(loss)
-            
-        mean_values.append(np.mean(values, axis=0))
-        std_values.append(np.std(values, axis=0))
+        losses.append(values)
+    return losses
     
