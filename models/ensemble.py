@@ -4,6 +4,7 @@ import torch.nn as nn
 from ae import AE
 import time
 from datetime import timedelta
+import numpy as np
 
 def train(train, train_loader, K=5, batch_size = 32, lr = 1e-2, w_d = 1e-5, momentum = 0.9, epochs = 15):
     
@@ -46,3 +47,20 @@ def train(train, train_loader, K=5, batch_size = 32, lr = 1e-2, w_d = 1e-5, mome
         print('[System Complete: {}]'.format(timedelta(seconds=ae_end-ae_start)))
     ens_end = time.time()
     print('Training completes in {}'.format(timedelta(seconds=ens_end-ens_start)))
+    
+def test(models, data, device, eps):
+    criterion = nn.MSELoss(reduction='none')
+    std_values = []
+    mean_values = []
+    for x in data:
+        values = []
+        for model in models:
+            xi = torch.tensor(x).to(torch.float32)
+            xi_ = model.forward(xi.to(device))
+            loss = criterion(xi.to(device), xi_)
+            loss = torch.mean(loss, 0)
+            values.append(loss)
+            
+        mean_values.append(np.mean(values, axis=0))
+        std_values.append(np.std(values, axis=0))
+    
