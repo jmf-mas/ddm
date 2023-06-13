@@ -2,15 +2,59 @@ import numpy as np
 from sklearn import metrics as sk_metrics
 import matplotlib.pyplot as plt
 import torch
+import tqdm
 import torch.nn as nn
 from tqdm import trange
 from torchvision import datasets
 from PIL import Image
 from torchvision.transforms.functional import rotate
+import torch.optim as optim
+
+
+def pie_plot(df, cols_list, rows, cols):
+    fig, axes = plt.subplots(rows, cols)
+    for ax, col in zip(axes.ravel(), cols_list):
+        df[col].value_counts().plot(ax=ax, kind='pie', figsize=(15, 15), fontsize=10, autopct='%1.0f%%')
+        ax.set_title(str(col), fontsize = 12)
+    plt.show()
 
 def entropy(p):
   # return NotImplemented
   return (-p * np.log(p)).sum(axis=1)
+
+# training the model
+def model_train(model, X_loader, n_epochs = 1, batch_size = 64):
+    
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    criterion = nn.MSELoss(reduction='mean')
+    model.zero_grad()
+    model.train(True)
+    for epoch in range(n_epochs):
+        epoch_loss = []
+        for step, batch in enumerate(X_loader):
+            x_in = batch.type(torch.float32)
+    
+            x_out = model(x_in)
+            loss = criterion(x_out, x_in)
+            print(loss.item())
+            loss.backward()
+            optimizer.step()
+            model.zero_grad()
+    
+            epoch_loss.append(loss.item())
+    
+        print("epoch {}: {}".format(epoch+1, sum(epoch_loss)/len(epoch_loss)))
+    
+   
+
+
+def model_eval(model, X_test):
+    loss_fn = nn.MSELoss(reduction='mean')
+    model.eval()
+    X_pred = model(X_test)
+    loss_val = loss_fn(X_test, X_pred)
+    return loss_val
+
 
 def train(net, train_data):
     x_train, y_train = train_data
@@ -36,7 +80,7 @@ def plot_uncertainty_bands(x_test, y_preds):
     y_preds = np.array(y_preds)
     y_mean = y_preds.mean(axis=0)
     y_std = y_preds.std(axis=0)
-
+    
     def add_uncertainty(ax):
         ax.plot(x_test, y_mean, '-', linewidth=3, color="#408765", label="predictive mean")
         ax.fill_between(x_test.ravel(), y_mean - 2 * y_std, y_mean + 2 * y_std, alpha=0.6, color='#86cfac', zorder=5)

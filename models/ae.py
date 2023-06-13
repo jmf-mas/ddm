@@ -1,35 +1,32 @@
 import torch.nn as nn
 
 class AE(nn.Module):
+    
     def __init__(self):
         super(AE, self).__init__()
         self.enc = nn.Sequential(
-            nn.Linear(784, 512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
+            nn.Linear(77, 64),
+            nn.Tanh(),
             nn.Linear(64, 32),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(32, 16),
-            nn.ReLU()
+            nn.Tanh(),
+            nn.Linear(16, 8),
+            nn.Tanh(),
+            nn.Linear(8, 4),
+            nn.Tanh()
         )
         self.dec = nn.Sequential(
+            nn.Linear(4, 8),
+            nn.Tanh(),
+            nn.Linear(8, 16),
+            nn.Tanh(),
             nn.Linear(16, 32),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(32, 64),
-            nn.ReLU(),
-            nn.Linear(64, 128),
-            nn.ReLU(),
-            nn.Linear(128, 256),
-            nn.ReLU(),
-            nn.Linear(256, 512),
-            nn.ReLU(),
-            nn.Linear(512, 784),
-            nn.ReLU()
+            nn.Tanh(),
+            nn.Linear(64, 77),
+            nn.Tanh()
         )
     def forward(self, x):
         encode = self.enc(x)
