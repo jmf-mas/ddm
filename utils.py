@@ -22,39 +22,6 @@ def entropy(p):
   # return NotImplemented
   return (-p * np.log(p)).sum(axis=1)
 
-# training the model
-def model_train(model, X_loader, n_epochs = 1, batch_size = 64):
-    
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    criterion = nn.MSELoss(reduction='mean')
-    model.zero_grad()
-    model.train(True)
-    for epoch in range(n_epochs):
-        epoch_loss = []
-        for step, batch in enumerate(X_loader):
-            x_in = batch.type(torch.float32)
-    
-            x_out = model(x_in)
-            loss = criterion(x_out, x_in)
-            print(loss.item())
-            loss.backward()
-            optimizer.step()
-            model.zero_grad()
-    
-            epoch_loss.append(loss.item())
-    
-        print("epoch {}: {}".format(epoch+1, sum(epoch_loss)/len(epoch_loss)))
-    
-   
-
-
-def model_eval(model, X_test):
-    loss_fn = nn.MSELoss(reduction='mean')
-    model.eval()
-    X_pred = model(X_test)
-    loss_val = loss_fn(X_test, X_pred)
-    return loss_val
-
 
 def train(net, train_data):
     x_train, y_train = train_data
@@ -64,7 +31,8 @@ def train(net, train_data):
     progress_bar = trange(3000)
     for _ in progress_bar:
         optimizer.zero_grad()
-        loss = criterion(y_train, net(x_train))
+        loss = 
+        loss = torch.sqrt(criterion(y_train, net(x_train)) + 0.0000001)
         progress_bar.set_postfix(loss=f'{loss / x_train.shape[0]:.3f}')
         loss.backward()
         optimizer.step()

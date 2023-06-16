@@ -1,28 +1,34 @@
 import pandas as pd
-from utils import model_train
-from sklearn.preprocessing import RobustScaler
+import numpy as np
+from sklearn.preprocessing import RobustScaler, MinMaxScaler
 from models.ae import AE
+from models.utils import model_train,  model2_train
+from models.auto_encoder import AutoEncoder
 import torch
 from torch.utils.data import DataLoader, RandomSampler
+from sklearn import preprocessing
+from sklearn.preprocessing import StandardScaler
+import collections
+import gc
+gc.enable()
 
 def scaling(df_num, cols):
-    std_scaler = RobustScaler()
+    std_scaler = MinMaxScaler(feature_range=(-1, 1))
     std_scaler_temp = std_scaler.fit_transform(df_num)
-    std_df = pd.DataFrame(std_scaler_temp, columns =cols)
+    std_df = pd.DataFrame(std_scaler_temp, columns = cols)
     return std_df
 
 cat_cols = ['is_host_login','protocol_type','service','flag','land', 'logged_in','is_guest_login', 'level', 'outcome']
+
 def preprocess(dataframe):
     df_num = dataframe.drop(cat_cols, axis=1)
     num_cols = df_num.columns
     scaled_df = scaling(df_num, num_cols)
-    
+    dataframe = dataframe.reset_index(drop=True)
     dataframe.drop(labels=num_cols, axis="columns", inplace=True)
     dataframe[num_cols] = scaled_df[num_cols]
-    
     dataframe.loc[dataframe['outcome'] == "normal", "outcome"] = 0
     dataframe.loc[dataframe['outcome'] != 0, "outcome"] = 1
-    
     dataframe = pd.get_dummies(dataframe, columns = ['protocol_type', 'service', 'flag'])
     return dataframe
 
@@ -36,9 +42,9 @@ columns = (['duration','protocol_type','service','flag','src_bytes','dst_bytes',
 data_train.columns = columns
 data_train.loc[data_train['outcome'] == "normal", "outcome"] = 'normal'
 data_train.loc[data_train['outcome'] != 'normal', "outcome"] = 'attack'
-
 data_train = data_train.loc[data_train['outcome']=='normal']
 scaled_train = preprocess(data_train)
+
 X = scaled_train.drop(['outcome', 'level'] , axis = 1).values
 y = scaled_train['outcome'].values
 y_reg = scaled_train['level'].values
@@ -46,11 +52,18 @@ X = X.astype('float32')
 X_sampler = RandomSampler(X)
 X_loader = DataLoader(X, sampler=X_sampler, batch_size=64)
 
+X_train = X.astype('float32')
+X_train = torch.from_numpy(X_train)
 
-X_train = torch.from_numpy(X)
+batch_size = 32
+lr = 1e-5
+w_d = 1e-5        
+momentum = 0.9   
+epochs = 10
 
 
-ae_model = AE()
-model_train(ae_model, X_train)
+ae_model = AE(X_train.shape[1], False)
+model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+
 
 

@@ -2,33 +2,26 @@ import torch.nn as nn
 
 class AE(nn.Module):
     
-    def __init__(self):
+    def __init__(self, input_dim, is_dropout):
         super(AE, self).__init__()
         self.enc = nn.Sequential(
-            nn.Linear(77, 64),
-            nn.Tanh(),
+            nn.Linear(input_dim, 64),
             nn.Linear(64, 32),
-            nn.Tanh(),
             nn.Linear(32, 16),
-            nn.Tanh(),
-            nn.Linear(16, 8),
-            nn.Tanh(),
-            nn.Linear(8, 4),
-            nn.Tanh()
+            nn.Linear(16, 8)
         )
+        self.linear =  nn.Linear(16, 8)
+        self.dropout = nn.Dropout(0.2)
+        self.is_dropout = is_dropout
         self.dec = nn.Sequential(
-            nn.Linear(4, 8),
-            nn.Tanh(),
             nn.Linear(8, 16),
-            nn.Tanh(),
             nn.Linear(16, 32),
-            nn.Tanh(),
             nn.Linear(32, 64),
-            nn.Tanh(),
-            nn.Linear(64, 77),
-            nn.Tanh()
+            nn.Linear(64, input_dim)
         )
     def forward(self, x):
         encode = self.enc(x)
+        if self.is_dropout:
+            encode = self.dropout(self.linear(encode))
         decode = self.dec(encode)
         return decode
