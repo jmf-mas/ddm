@@ -43,7 +43,7 @@ batch_size = 32
 lr = 1e-5
 w_d = 1e-5        
 momentum = 0.9   
-epochs = 10
+epochs = 3
 
 X = scaled_train.drop(['outcome', 'level'] , axis = 1).values
 y = scaled_train['outcome'].values

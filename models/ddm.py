@@ -14,4 +14,5 @@ class DDM:
         return pred, pred[1]*e
     
      
-    
+    def set_params(self, threshold):
+        min_e = np.min()
