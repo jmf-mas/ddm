@@ -10,8 +10,13 @@ class AE(nn.Module):
             nn.Linear(32, 16),
             nn.Linear(16, 8)
         )
-        self.linear =  nn.Linear(16, 8)
-        self.dropout = nn.Dropout(0.2)
+        self.enc_dropout = nn.Sequential(
+            nn.Linear(input_dim, 64),
+            nn.Linear(64, 32),
+            nn.Linear(32, 16),
+            nn.Dropout(0.2),
+            nn.Linear(16, 8)
+        )
         self.is_dropout = is_dropout
         self.name = name
         self.dec = nn.Sequential(
@@ -21,8 +26,10 @@ class AE(nn.Module):
             nn.Linear(64, input_dim)
         )
     def forward(self, x):
-        encode = self.enc(x)
-        if self.is_dropout:
-            encode = self.dropout(self.linear(encode))
+        encode = None
+        if  not self.is_dropout:
+            encode = self.enc(x)
+        else:
+            encode = self.enc_dropout(x)
         decode = self.dec(encode)
         return decode

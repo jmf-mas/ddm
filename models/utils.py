@@ -48,11 +48,11 @@ def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_siz
     
         print("epoch {}: {}".format(epoch+1, sum(epoch_loss)/len(epoch_loss)))
     
-def model_eval(model, X_test):
+def model_eval(model, x):
     loss_fn = nn.MSELoss()
     model.eval()
-    X_pred = model(X_test)
-    loss_val = loss_fn(X_test, X_pred)
+    x_pred = model(x)
+    loss_val = loss_fn(x, x_pred)
     return loss_val
  
 def save(model):

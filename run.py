@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from models.ae import AE
+from models.utils import model_train
 import torch
 from torch.utils.data import DataLoader, RandomSampler
 import pickle
@@ -38,27 +39,25 @@ data_train.loc[data_train['outcome'] != 'normal', "outcome"] = 'attack'
 data_train = data_train.loc[data_train['outcome']=='normal']
 scaled_train = preprocess(data_train)
 
-X = scaled_train.drop(['outcome', 'level'] , axis = 1).values
-y = scaled_train['outcome'].values
-y_reg = scaled_train['level'].values
-X = X.astype('float32')
-X_sampler = RandomSampler(X)
-X_loader = DataLoader(X, sampler=X_sampler, batch_size=64)
-
-X_train = X.astype('float32')
-X_train = torch.from_numpy(X_train)
-
 batch_size = 32
 lr = 1e-5
 w_d = 1e-5        
 momentum = 0.9   
 epochs = 10
 
+X = scaled_train.drop(['outcome', 'level'] , axis = 1).values
+y = scaled_train['outcome'].values
+y_reg = scaled_train['level'].values
+X = X.astype('float32')
+X_sampler = RandomSampler(X)
+X_loader = DataLoader(X, sampler=X_sampler, batch_size=batch_size)
 
-ae_model = AE(X_train.shape[1], False, "ae_model")
-#model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
-with open("ae_model_0.pickle", "rb") as fp:
-    ae_model.load_state_dict(pickle.load(fp))
+X_train = X.astype('float32')
+X_train = torch.from_numpy(X_train)
+
+ae_model = AE(X_train.shape[1], True, "ae_model")
+model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+
 
 
 
