@@ -2,7 +2,7 @@ import torch.nn as nn
 
 class AE(nn.Module):
     
-    def __init__(self, input_dim, is_dropout):
+    def __init__(self, input_dim, is_dropout, name):
         super(AE, self).__init__()
         self.enc = nn.Sequential(
             nn.Linear(input_dim, 64),
@@ -13,6 +13,7 @@ class AE(nn.Module):
         self.linear =  nn.Linear(16, 8)
         self.dropout = nn.Dropout(0.2)
         self.is_dropout = is_dropout
+        self.name = name
         self.dec = nn.Sequential(
             nn.Linear(8, 16),
             nn.Linear(16, 32),

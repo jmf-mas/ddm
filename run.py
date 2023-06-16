@@ -1,16 +1,9 @@
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import RobustScaler, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
 from models.ae import AE
-from models.utils import model_train,  model2_train
-from models.auto_encoder import AutoEncoder
 import torch
 from torch.utils.data import DataLoader, RandomSampler
-from sklearn import preprocessing
-from sklearn.preprocessing import StandardScaler
-import collections
-import gc
-gc.enable()
+import pickle
 
 def scaling(df_num, cols):
     std_scaler = MinMaxScaler(feature_range=(-1, 1))
@@ -62,8 +55,10 @@ momentum = 0.9
 epochs = 10
 
 
-ae_model = AE(X_train.shape[1], False)
-model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+ae_model = AE(X_train.shape[1], False, "ae_model")
+#model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+with open("ae_model_0.pickle", "rb") as fp:
+    ae_model.load_state_dict(pickle.load(fp))
 
 
 
