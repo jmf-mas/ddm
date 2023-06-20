@@ -6,6 +6,8 @@ import pickle
 from pathlib import Path
 from sklearn import metrics as sk_metrics
 
+
+
 class Loader(torch.utils.data.Dataset):
     def __init__(self):
         super(Loader, self).__init__()
@@ -48,7 +50,35 @@ def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_siz
             epoch_loss.append(loss.item())
     
         print("epoch {}: {}".format(epoch+1, sum(epoch_loss)/len(epoch_loss)))
+
+def vae_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size = 32):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model.to(device)
+    criterion = nn.BCELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=l_r, weight_decay=w_d)
+
+    for epoch in range(n_epochs):
+        epoch_loss = []
+        for step, batch in enumerate(X_loader):
+            x_in = batch.type(torch.float32)
+            x_in = x_in.to(device)
     
+            x_out, mu, logvar = model(x_in)
+            loss = criterion(x_out, x_in)
+            
+            # Compute the KL divergence loss
+            kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+            total_loss = loss + kl_loss
+            
+            # Backpropagate the gradients and update the model weights
+            optimizer.zero_grad()
+            total_loss.backward()
+            optimizer.step()
+            epoch_loss.append(total_loss.item())
+            
+            # Print the loss values
+        print(f"Epoch {epoch}: reconstruction_loss = {loss:.4f}, kl_loss = {kl_loss:.4f}, total_loss = {total_loss:.4f}")
+            
 def model_eval(model, x):
     loss_fn = nn.MSELoss()
     model.eval()
@@ -135,5 +165,6 @@ def save(model):
 def load(model):
     with open("checkpoints/"+model.name+".pickle", "rb") as fp:
         model.load_state_dict(pickle.load(fp))
-    
+        
+
 

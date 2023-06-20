@@ -1,13 +1,15 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from models.ae import AE
-from models.utils import model_train
+from models.utils import model_train, vae_train
 import torch
 from torch.utils.data import DataLoader, RandomSampler
 import pickle
+from models.vae import VAE
+
 
 def scaling(df_num, cols):
-    std_scaler = MinMaxScaler(feature_range=(-1, 1))
+    std_scaler = MinMaxScaler(feature_range=(0, 1))
     std_scaler_temp = std_scaler.fit_transform(df_num)
     std_df = pd.DataFrame(std_scaler_temp, columns = cols)
     return std_df
@@ -55,8 +57,15 @@ X_loader = DataLoader(X, sampler=X_sampler, batch_size=batch_size)
 X_train = X.astype('float32')
 X_train = torch.from_numpy(X_train)
 
-ae_model = AE(X_train.shape[1], True, "ae_model")
-model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+ae_model = AE(X_train.shape[1], True, "ae_model_kdd")
+#model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+
+
+# VAE
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+vae = VAE(X_train.shape[1], "vae_model_kdd")
+vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
 
 
 
