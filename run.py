@@ -6,6 +6,8 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler
 import pickle
 from models.vae import VAE
+from util import plot_uncertainty_bands
+import torch.nn as nn
 
 
 def scaling(df_num, cols):
@@ -45,7 +47,7 @@ batch_size = 32
 lr = 1e-5
 w_d = 1e-5        
 momentum = 0.9   
-epochs = 3
+epochs = 5
 
 X = scaled_train.drop(['outcome', 'level'] , axis = 1).values
 y = scaled_train['outcome'].values
@@ -57,15 +59,29 @@ X_loader = DataLoader(X, sampler=X_sampler, batch_size=batch_size)
 X_train = X.astype('float32')
 X_train = torch.from_numpy(X_train)
 
-ae_model = AE(X_train.shape[1], True, "ae_model_kdd")
+# classical ae
+ae_model = AE(X_train.shape[1], False, "ae_model_kdd")
 #model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+#ae_model.save()
+ae_model.load()
 
+#dropout
+ae_dropout_model = AE(X_train.shape[1], True, "ae_dropout_model_kdd")
+#model_train(ae_dropout_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+#ae_dropout_model.save()
+ae_dropout_model.load()
 
 # VAE
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 vae = VAE(X_train.shape[1], "vae_model_kdd")
-vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+#vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+#vae.save()
+vae.load()
+
+
+sample_size = 5
+criterion = nn.BCELoss()
+scores = [[criterion(vae(x_in)[0], x_in).item() for i in range(sample_size)] for x_in in X_train]
 
 
 

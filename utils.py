@@ -31,7 +31,6 @@ def train(net, train_data):
     progress_bar = trange(3000)
     for _ in progress_bar:
         optimizer.zero_grad()
-        loss = 
         loss = torch.sqrt(criterion(y_train, net(x_train)) + 0.0000001)
         progress_bar.set_postfix(loss=f'{loss / x_train.shape[0]:.3f}')
         loss.backward()
@@ -166,12 +165,12 @@ def compute_metrics(test_score, y_test, thresh, pos_label=1):
 
     return accuracy, precision, recall, f_score, roc, avgpr, cm
 
-def _estimate_optimal_threshold(test_score, y_test, pos_label=1, nq=100):
+def _estimate_optimal_threshold(val_score, y_val, pos_label=1, nq=100):
     # def score_recall_precision(combined_score, test_score, test_labels, pos_label=1, nq=100):
-    ratio = 100 * sum(y_test == 0) / len(y_test)
+    ratio = 100 * sum(y_val == 0) / len(y_val)
     print(f"Ratio of normal data:{ratio}")
     q = np.linspace(ratio - 5, min(ratio + 5, 100), nq)
-    thresholds = np.percentile(test_score, q)
+    thresholds = np.percentile(val_score, q)
 
     result_search = []
     confusion_matrices = []
@@ -185,7 +184,7 @@ def _estimate_optimal_threshold(test_score, y_test, pos_label=1, nq=100):
     for i, (thresh, qi) in enumerate(zip(thresholds, q)):
         # print(f"Threshold :{thresh:.3f}--> {qi:.3f}")
         # Prediction using the threshold value
-        accuracy, precision, recall, f_score, roc, avgpr, cm = compute_metrics(test_score, y_test, thresh, pos_label)
+        accuracy, precision, recall, f_score, roc, avgpr, cm = compute_metrics(val_score, y_val, thresh, pos_label)
 
         confusion_matrices.append(cm)
         result_search.append([accuracy, precision, recall, f_score])
