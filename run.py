@@ -8,6 +8,7 @@ import pickle
 from models.vae import VAE
 from util import plot_uncertainty_bands
 import torch.nn as nn
+import numpy as np
 
 
 def scaling(df_num, cols):
@@ -40,7 +41,8 @@ columns = (['duration','protocol_type','service','flag','src_bytes','dst_bytes',
 data_train.columns = columns
 data_train.loc[data_train['outcome'] == "normal", "outcome"] = 'normal'
 data_train.loc[data_train['outcome'] != 'normal', "outcome"] = 'attack'
-data_train = data_train.loc[data_train['outcome']=='normal']
+
+#data_train = data_train.loc[data_train['outcome']=='normal']
 scaled_train = preprocess(data_train)
 
 batch_size = 32
@@ -49,15 +51,26 @@ w_d = 1e-5
 momentum = 0.9   
 epochs = 5
 
-X = scaled_train.drop(['outcome', 'level'] , axis = 1).values
-y = scaled_train['outcome'].values
-y_reg = scaled_train['level'].values
-X = X.astype('float32')
-X_sampler = RandomSampler(X)
-X_loader = DataLoader(X, sampler=X_sampler, batch_size=batch_size)
+train_data_all = scaled_train.sample(frac = 0.9, random_state=200)
+train_data = train_data_all.loc[train_data_all['outcome']==0]
+val_data = scaled_train.drop(train_data_all.index)
+val_data = [val_data, train_data_all.drop(train_data.index)]
+val_data = pd.concat(val_data)
 
-X_train = X.astype('float32')
+X_train = train_data.drop(['outcome', 'level'] , axis = 1).values
+X_val = val_data.drop(['outcome', 'level'] , axis = 1).values
+
+y_train = train_data['outcome'].values
+y_reg_train = train_data['level'].values
+y_val = val_data['outcome'].values
+y_reg_val = val_data['level'].values
+X_train = X_train.astype('float32')
+X_val = X_val.astype('float32')
+X_sampler = RandomSampler(X_train)
+X_loader = DataLoader(X_train, sampler=X_sampler, batch_size=batch_size)
+
 X_train = torch.from_numpy(X_train)
+X_val = torch.from_numpy(X_val)
 
 # classical ae
 ae_model = AE(X_train.shape[1], False, "ae_model_kdd")
@@ -77,11 +90,15 @@ vae = VAE(X_train.shape[1], "vae_model_kdd")
 #vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
 #vae.save()
 vae.load()
+vae.to(device)
 
 
 sample_size = 5
 criterion = nn.BCELoss()
-scores = [[criterion(vae(x_in)[0], x_in).item() for i in range(sample_size)] for x_in in X_train]
+scores = [[criterion(vae(x_in.to(device))[0], x_in.to(device)).item() for i in range(sample_size)] for x_in in X_train]
+scores = np.array(scores)
+np.savetxt("checkpoints/scores_vae_kdd.txt", scores, delimiter=',')
+plot_uncertainty_bands(scores)
 
 
 
