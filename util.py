@@ -48,6 +48,8 @@ def inversion_number(u, eta):
         for j in range(i + 1, n_i):
             if (u_i[i] < u_i[j]):
                 ini += 1
-    inr = 2*inr/(n_r*(n_r-1))
-    ini = 2*ini/(n_i*(n_i-1))
+    if n_r >= 2:
+        inr = 2*inr/(n_r*(n_r-1))
+    if n_i >= 2:
+        ini = 2*ini/(n_i*(n_i-1))
     return inr, ini, (inr + ini)/2
