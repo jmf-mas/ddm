@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import expon
+import matplotlib
 
 def plot_generic(scores_mean, normal_data, add_to_plot=None):
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -53,3 +54,35 @@ def inversion_number(u, eta):
     if n_i >= 2:
         ini = 2*ini/(n_i*(n_i-1))
     return inr, ini, (inr + ini)/2
+
+def get_heatmap(metrics, filename):
+
+
+    uq_methods = ["CP", "CP+", "EDL", "EDL+",
+                  "MCD", "MCD+", "VAEs", "VAEs+"]
+    
+    metrics = np.round(metrics, 2)
+    
+    
+    fig, ax = plt.subplots()
+    im = ax.imshow(metrics)
+    
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(len(uq_methods)))
+    ax.set_yticks(np.arange(len(uq_methods)))
+    # ... and label them with the respective list entries
+    ax.set_xticklabels(uq_methods)
+    ax.set_yticklabels(uq_methods)
+    
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+    
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(uq_methods)):
+        for j in range(len(uq_methods)):
+            text = ax.text(j, i, metrics[i, j], ha="center", va="center", color="w")
+    
+    fig.tight_layout()
+    plt.savefig(filename+".png", dpi=300)
+    plt.show()
