@@ -86,22 +86,21 @@ def get_heatmap(metrics, filename):
     plt.savefig(filename+".png", dpi=300)
     plt.show()
     
-def generate_distribution_plots(minus, star, plus, filename):
-    E_minus, S_minus, S_m, y_minus = minus
-    E_star, S_star, S_s, y_star = star
-    E_plus, S_plus, S_p, y_plus = plus
+def generate_distribution_plots(normal, abnormal, filename):
+    E_normal, S_normal, S_n, y_normal = normal
+    E_abnormal, S_abnormal, S_a, y_abnormal = abnormal
     
     fig, axs = plt.subplots(2, 2)
-    axs[0, 0].plot(E_minus, y_minus, '-b', label='regularity')
+    axs[0, 0].plot(E_normal, y_normal, '-b', label='regularity')
     axs[0, 0].set_ylim(0, 5)
-    axs[0, 0].fill_between(E_minus, y_minus - 2 * S_minus, y_minus + 2 * S_minus, alpha=0.6, color='#86cfac', zorder=5)
-    axs[0, 1].plot(E_minus, y_minus, '-b', label='regularity')
+    axs[0, 0].fill_between(E_normal, y_normal - 2 * S_normal, y_normal + 2 * S_normal, alpha=0.6, color='#86cfac', zorder=5)
+    axs[0, 1].plot(E_normal, y_normal, '-b', label='regularity')
     axs[0, 1].set_ylim(0, 5)
-    axs[0, 1].fill_between(E_minus, y_minus - 2 * S_m, y_minus + 2 * S_m, alpha=0.6, color='#86cfac', zorder=5)
-    axs[1, 0].plot(E_plus, y_plus, '-k', label='regularity')
+    axs[0, 1].fill_between(E_normal, y_normal - 2 * S_n, y_normal + 2 * S_n, alpha=0.6, color='#86cfac', zorder=5)
+    axs[1, 0].plot(E_abnormal, y_abnormal, '-k', label='regularity')
     axs[1, 0].set_ylim(-1, 3)
-    axs[1, 0].fill_between(E_plus, y_plus - 2 * S_plus, y_plus + 2 * S_plus, alpha=0.6, color='#ffcccc', zorder=5)
-    axs[1, 1].plot(E_plus, y_plus, '-k', label='regularity')
+    axs[1, 0].fill_between(E_abnormal, y_abnormal - 2 * S_abnormal, y_abnormal + 2 * S_abnormal, alpha=0.6, color='#ffcccc', zorder=5)
+    axs[1, 1].plot(E_abnormal, y_abnormal, '-k', label='regularity')
     axs[1, 1].set_ylim(-1, 3)
-    axs[1, 1].fill_between(E_plus, y_plus - 2 * S_p, y_plus + 2 * S_p, alpha=0.6, color='#ffcccc', zorder=5)
-    plt.savefig(filename+".png", dpi=300)
+    axs[1, 1].fill_between(E_abnormal, y_abnormal - 2 * S_a, y_abnormal + 2 * S_a, alpha=0.6, color='#ffcccc', zorder=5)
+    plt.savefig(filename+".png", dpi=300 )

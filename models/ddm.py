@@ -39,61 +39,51 @@ class DDM:
         delta_plus = self.d*d_plus
         
         ES = np.concatenate((E.reshape(-1, 1), S.reshape(1, -1).T), axis=1)
-        
+        # for plots
+        ES_normal = np.array(list(filter(lambda esi: esi[0] < self.eta, ES)))
+        ES_abnormal = np.array(list(filter(lambda esi: esi[0] >= self.eta, ES)))
+        E_normal, S_normal = ES_normal[:, 0], ES_normal[:, 1]
+        E_abnormal, S_abnormal = ES_abnormal[:, 0], ES_abnormal[:, 1]
+        # for getting distribution parameters
         ES_minus = np.array(list(filter(lambda esi: esi[0] < self.eta - (1-self.phi)*delta_minus, ES)))
         ES_plus = np.array(list(filter(lambda esi: esi[0] > self.eta + (1-self.phi)*delta_plus, ES)))
         ES_star = np.array(list(filter(lambda esi: self.eta - (1+self.phi)*delta_minus <= esi[0] <= self.eta + (1+self.phi)*delta_plus, ES)))
-        E_minus, S_minus = ES_minus[:, 0], ES_minus[:, 1]
-        E_plus, S_plus = ES_plus[:, 0], ES_plus[:, 1]
-        E_star, S_star = ES_star[:, 0], ES_star[:, 1]
-        
+        E_minus = ES_minus[:, 0]
+        E_plus = ES_plus[:, 0]
+        E_star = ES_star[:, 0]
         normal_params, uncertain_params, abnormal_params = self.optimal_params(E_minus, E_star, E_plus)
         
         normal_model = lambda x: expon.pdf(x, loc=normal_params[0], scale=normal_params[1])
         abnormal_model = lambda x: expon.cdf(x, loc=abnormal_params[0], scale=abnormal_params[1])
         uncertain_model = lambda x: norm.pdf(x, loc=uncertain_params[0], scale=uncertain_params[1])
         
-        E_minus, S_minus = zip(*sorted(zip(E_minus, S_minus), reverse=False))
-        E_plus, S_plus = zip(*sorted(zip(E_plus, S_plus), reverse=False))
-        E_star, S_star = zip(*sorted(zip(E_star, S_star), reverse=False))
+        E_normal, S_normal = zip(*sorted(zip(E_normal, S_normal), reverse=False))
+        E_abnormal, S_abnormal = zip(*sorted(zip(E_abnormal, S_abnormal), reverse=False))
         
-        E_minus = list(E_minus)
-        S_minus = np.array(list(S_minus))
-        E_plus = list(E_plus)
-        S_plus = np.array(list(S_plus))
-        E_star = list(E_star)
-        S_star = np.array(list(S_star))
+        E_normal = list(E_normal)
+        S_normal = np.array(list(S_normal))
+        E_abnormal = list(E_abnormal)
+        S_abnormal = np.array(list(S_abnormal))
         
-        y_n_minus, y_n_star, y_n_plus = normal_model(E_minus), normal_model(E_star), normal_model(E_plus)
-        y_a_minus, y_a_star, y_a_plus = abnormal_model(E_minus), abnormal_model(E_star), abnormal_model(E_plus)
-        y_u_minus, y_u_star, y_u_plus = uncertain_model(E_minus), uncertain_model(E_star), uncertain_model(E_plus)
+        y_n_n, y_a_n, y_u_n = normal_model(E_normal), abnormal_model(E_normal), uncertain_model(E_normal)
+        y_n_a, y_a_a, y_u_a = normal_model(E_abnormal), abnormal_model(E_abnormal), uncertain_model(E_abnormal)
         
+        y_n = np.concatenate((y_n_n.reshape(-1, 1), y_a_n.reshape(1, -1).T), axis=1)
+        y_n = np.concatenate((y_n, y_u_n.reshape(1, -1).T), axis=1)
+        sum_n = np.sum(y_n, axis=1)
+        y_n = self.division(y_n, sum_n)
         
-        y_m = np.concatenate((y_n_minus.reshape(-1, 1), y_a_minus.reshape(1, -1).T), axis=1)
-        y_m = np.concatenate((y_m, y_u_minus.reshape(1, -1).T), axis=1)
-        sum_m = np.sum(y_m, axis=1)
-        y_m = self.division(y_m, sum_m)
+        y_a = np.concatenate((y_n_a.reshape(-1, 1), y_a_a.reshape(1, -1).T), axis=1)
+        y_a = np.concatenate((y_a, y_u_a.reshape(1, -1).T), axis=1)
+        sum_a = np.sum(y_a, axis=1)
+        y_a = self.division(y_a, sum_a)
+        
+        S_n = np.multiply(y_n[:, 2], S_normal)
+        S_a = np.multiply(y_a[:, 2], S_abnormal)
     
-        y_s = np.concatenate((y_n_star.reshape(-1, 1), y_a_star.reshape(1, -1).T), axis=1)
-        y_s = np.concatenate((y_s, y_u_star.reshape(1, -1).T), axis=1)
-        sum_s = np.sum(y_s, axis=1)
-        y_s = self.division(y_s, sum_s)
-        
-        y_p = np.concatenate((y_n_plus.reshape(-1, 1), y_a_plus.reshape(1, -1).T), axis=1)
-        y_p = np.concatenate((y_p, y_u_plus.reshape(1, -1).T), axis=1)
-        sum_p = np.sum(y_p, axis=1)
-        y_p = self.division(y_p, sum_p)
-        
-        S_m = np.multiply(y_m[:, 2], S_minus)
-        S_s = np.multiply(y_s[:, 2], S_star)
-        S_p = np.multiply(y_p[:, 2], S_plus)
-    
-        y_minus = normal_model(E_minus)
-        y_plus = abnormal_model(E_plus)
-        y_star = uncertain_model(E_star)
-        
-        return (E_minus, S_minus, S_m, y_minus), (E_star, S_star, S_s, y_star), (E_plus, S_plus, S_p, y_plus)
-    
+        y_normal = normal_model(E_normal)
+        y_abnormal = abnormal_model(E_abnormal)   
+        return (E_normal, S_normal, S_n, y_normal), (E_abnormal, S_abnormal, S_a, y_abnormal)
     
      
     
