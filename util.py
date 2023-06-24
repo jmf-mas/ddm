@@ -38,21 +38,26 @@ def plot_uncertainty_bands(scores):
 
     plot_generic(scores_mean, normal_data, add_uncertainty)
     
-def inversion_number(u, eta):
-    u_r = list(filter(lambda e: e <= eta, u))
-    u_i = list(filter(lambda e: e > eta, u))
-    n_r = len(u_r)
-    n_i = len(u_i)
+def inversion_number(E_normal, S_normal, E_abnormal, S_abnormal, eta):
+    
+    E_na = np.array(list(E_normal) + list(E_abnormal))
+    S_na = np.array(list(S_normal) + list(S_abnormal))
+    
+    ES = np.concatenate((E_na.reshape(-1, 1), S_na.reshape(1, -1).T), axis=1)
+    ES_r = np.array(list(filter(lambda e: e[0] <= eta, ES)))
+    ES_i = np.array(list(filter(lambda e: e[0] > eta, ES)))
+    n_r = len(ES_r)
+    n_i = len(ES_i)
     inr = 0
     ini = 0
     for i in range(n_r):
         for j in range(i + 1, n_r):
-            if (u_r[i] > u_r[j]):
+            if (ES_r[i, 1] > ES_r[j, 1]):
                 inr += 1
     
     for i in range(n_i):
         for j in range(i + 1, n_i):
-            if (u_i[i] < u_i[j]):
+            if (ES_i[i, 1] < ES_i[j, 1]):
                 ini += 1
     if n_r >= 2:
         inr = 2*inr/(n_r*(n_r-1))
