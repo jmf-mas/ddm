@@ -66,19 +66,13 @@ def get_heatmap(metrics, filename):
     
     fig, ax = plt.subplots()
     im = ax.imshow(metrics)
-    
-    # We want to show all ticks...
     ax.set_xticks(np.arange(len(uq_methods)))
     ax.set_yticks(np.arange(len(uq_methods)))
-    # ... and label them with the respective list entries
     ax.set_xticklabels(uq_methods)
     ax.set_yticklabels(uq_methods)
-    
-    # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
              rotation_mode="anchor")
     
-    # Loop over data dimensions and create text annotations.
     for i in range(len(uq_methods)):
         for j in range(len(uq_methods)):
             text = ax.text(j, i, metrics[i, j], ha="center", va="center", color="w")
