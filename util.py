@@ -2,6 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import expon
 import matplotlib
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+from scipy import stats
 
 def plot_generic(scores_mean, normal_data, add_to_plot=None):
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -80,3 +85,23 @@ def get_heatmap(metrics, filename):
     fig.tight_layout()
     plt.savefig(filename+".png", dpi=300)
     plt.show()
+    
+def generate_distribution_plots(minus, star, plus, filename):
+    E_minus, S_minus, S_m, y_minus = minus
+    E_star, S_star, S_s, y_star = star
+    E_plus, S_plus, S_p, y_plus = plus
+    
+    fig, axs = plt.subplots(2, 2)
+    axs[0, 0].plot(E_minus, y_minus, '-b', label='regularity')
+    axs[0, 0].set_ylim(0, 5)
+    axs[0, 0].fill_between(E_minus, y_minus - 2 * S_minus, y_minus + 2 * S_minus, alpha=0.6, color='#86cfac', zorder=5)
+    axs[0, 1].plot(E_minus, y_minus, '-b', label='regularity')
+    axs[0, 1].set_ylim(0, 5)
+    axs[0, 1].fill_between(E_minus, y_minus - 2 * S_m, y_minus + 2 * S_m, alpha=0.6, color='#86cfac', zorder=5)
+    axs[1, 0].plot(E_plus, y_plus, '-k', label='regularity')
+    axs[1, 0].set_ylim(-1, 3)
+    axs[1, 0].fill_between(E_plus, y_plus - 2 * S_plus, y_plus + 2 * S_plus, alpha=0.6, color='#ffcccc', zorder=5)
+    axs[1, 1].plot(E_plus, y_plus, '-k', label='regularity')
+    axs[1, 1].set_ylim(-1, 3)
+    axs[1, 1].fill_between(E_plus, y_plus - 2 * S_p, y_plus + 2 * S_p, alpha=0.6, color='#ffcccc', zorder=5)
+    plt.savefig(filename+".png", dpi=300)
