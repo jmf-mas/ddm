@@ -72,14 +72,15 @@ X_loader = DataLoader(X_train, sampler=X_sampler, batch_size=batch_size)
 
 X_train = torch.from_numpy(X_train)
 X_val = torch.from_numpy(X_val)
-
+sample_size = 5
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # classical ae
-ae_model = AE(X_train.shape[1], False, "ae_model_kdd")
-#model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
-#ae_model.save()
-ae_model.load()
-ae_model.to(device)
+for single in range(sample_size):
+    ae_model = AE(X_train.shape[1], False, "ae_model_kdd_"+str(single))
+    #model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+    #ae_model.save()
+    ae_model.load()
+    ae_model.to(device)
 
 #dropout
 ae_dropout_model = AE(X_train.shape[1], True, "ae_dropout_model_kdd")
@@ -96,12 +97,11 @@ vae.load()
 vae.to(device)
 
 
-sample_size = 5
 criterion = nn.BCELoss()
 #scores = [[criterion(vae(x_in.to(device))[0], x_in.to(device)).item() for i in range(sample_size)] for x_in in X_train]
 #scores = np.array(scores)
 #np.savetxt("checkpoints/scores_vae_kdd.txt", scores, delimiter=',')
-scores = np.loadtxt("checkpoints/scores_vae_kdd.txt", delimiter=',')
+scores = np.loadtxt("checkpoints/scores_vae_kdd.csv", delimiter=',')
 plot_uncertainty_bands(scores)
 
 #params = estimate_optimal_threshold(val_score, y_val, pos_label=1, nq=100)
