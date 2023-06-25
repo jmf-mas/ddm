@@ -1,12 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import expon
-import matplotlib
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
 from scipy import stats
+from matplotlib.pylab import pltlab
 
 def plot_generic(scores_mean, normal_data, add_to_plot=None):
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -109,3 +105,35 @@ def generate_distribution_plots(normal, abnormal, filename):
     axs[1, 1].set_ylim(-1, 3)
     axs[1, 1].fill_between(E_abnormal, y_abnormal - 2 * S_a, y_abnormal + 2 * S_a, alpha=0.6, color='#ffcccc', zorder=5)
     plt.savefig(filename+".png", dpi=300 )
+    
+def plot_training_loss(cp, edl, mcd, vae, dbname="kdd"):
+
+    filename = "checkpoints/"
+    # Load the training and validation loss dictionaries
+    cp_train_loss = np.loadtxt(filename+"")
+    edl_train_loss = np.loadtxt(filename+"")
+    mcd_train_loss = np.loadtxt(filename+"")
+    vae_train_loss = np.loadtxt(filename+"")
+     
+    # Generate a sequence of integers to represent the epoch numbers
+    epochs = range(1, len(cp_train_loss)+1)
+     
+    # Plot and label the training and validation loss values
+    pltlab.plot(epochs, cp_train_loss, label='Training Loss ')
+    pltlab.plot(epochs, edl_train_loss, label='Training Loss ')
+    pltlab.plot(epochs, mcd_train_loss, label='Training Loss ')
+    pltlab.plot(epochs, vae_train_loss, label='Training Loss ')
+
+     
+    # Add in a title and axes labels
+    pltlab.title('Training Loss')
+    pltlab.xlabel('Epochs')
+    pltlab.ylabel('Loss')
+     
+    # Set the tick locations
+    pltlab.xticks(np.arange(0, len(cp_train_loss)+1, 2))
+     
+    # Display the plot
+    pltlab.legend(loc='best')
+    pltlab.savefig(filename+dbname+"_training.png", dpi=300 )
+    pltlab.show()

@@ -9,6 +9,7 @@ from models.vae import VAE
 from util import plot_uncertainty_bands
 import torch.nn as nn
 import numpy as np
+from models.utils import estimate_optimal_threshold
 
 
 def scaling(df_num, cols):
@@ -102,6 +103,8 @@ criterion = nn.BCELoss()
 #np.savetxt("checkpoints/scores_vae_kdd.txt", scores, delimiter=',')
 scores = np.loadtxt("checkpoints/scores_vae_kdd.txt", delimiter=',')
 plot_uncertainty_bands(scores)
+
+#params = estimate_optimal_threshold(val_score, y_val, pos_label=1, nq=100)
 
 
 
