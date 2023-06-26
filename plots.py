@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pylab import pltlab
+from sklearn.decomposition import PCA
 
 def heatmap(metrics, filename):
 
@@ -80,6 +81,8 @@ def training_loss(cp, edl, mcd, vae, dbname="kdd"):
     pltlab.show()
 
 def data_set_distribution(X, y, filename):
+    pca = PCA(n_components=2)
+    X = pca.fit_transform(X)
     plt.scatter(X[y==0, 0], X[y==0, 1], s=3, c='blue', alpha=0.5)
     plt.scatter(X[y==1, 0], X[y==1, 1], s=3, c='red', alpha=0.5)
     plt.savefig(filename+".png", dpi=300 )
