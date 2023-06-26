@@ -1,5 +1,7 @@
 from utils import train, evaluate
 from pathlib import Path
+from metrics import confusion_matrix_metrics, effect_size, inversion_number
+from metrics import friedman_test_for_4_samples, friedman_test_for_8_samples
 
 directory_model = "checkpoints/"
 directory_data = "data/"

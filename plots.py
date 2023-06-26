@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pylab import pltlab
 
-def get_heatmap(metrics, filename):
+def heatmap(metrics, filename):
 
 
     uq_methods = ["CP", "CP+", "EDL", "EDL+",
@@ -28,7 +28,7 @@ def get_heatmap(metrics, filename):
     plt.savefig(filename+".png", dpi=300)
     plt.show()
     
-def generate_distribution_plots(normal, abnormal, filename):
+def redm(normal, abnormal, filename):
     E_normal, S_normal, S_n, y_normal = normal
     E_abnormal, S_abnormal, S_a, y_abnormal = abnormal
     
@@ -47,7 +47,7 @@ def generate_distribution_plots(normal, abnormal, filename):
     axs[1, 1].fill_between(E_abnormal, y_abnormal - 2 * S_a, y_abnormal + 2 * S_a, alpha=0.6, color='#ffcccc', zorder=5)
     plt.savefig(filename+".png", dpi=300 )
     
-def plot_training_loss(cp, edl, mcd, vae, dbname="kdd"):
+def training_loss(cp, edl, mcd, vae, dbname="kdd"):
 
     filename = "checkpoints/"
     # Load the training and validation loss dictionaries
@@ -79,7 +79,7 @@ def plot_training_loss(cp, edl, mcd, vae, dbname="kdd"):
     pltlab.savefig(filename+dbname+"_training.png", dpi=300 )
     pltlab.show()
 
-def plot_data_set_distribution(X, y, filename):
+def data_set_distribution(X, y, filename):
     plt.scatter(X[y==0, 0], X[y==0, 1], s=3, c='blue', alpha=0.5)
     plt.scatter(X[y==1, 0], X[y==1, 1], s=3, c='red', alpha=0.5)
     plt.savefig(filename+".png", dpi=300 )
