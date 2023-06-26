@@ -31,7 +31,7 @@ class Train_Loader(Loader):
                        index_col=False
                        )
 
-def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size = 32, save_errors = False):
+def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size = 32, save_errors = True):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=l_r, weight_decay=w_d)
@@ -55,7 +55,7 @@ def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_siz
     if save_errors:
         np.savetxt(parent_name+model.name+file_extension, errors, delimiter=',')
 
-def vae_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size = 32, save_errors = False):
+def vae_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size = 32, save_errors = True):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
     criterion = nn.BCELoss()

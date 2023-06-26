@@ -3,14 +3,26 @@ from sklearn.preprocessing import MinMaxScaler
 from models.ae import AE
 from models.utils import model_train, vae_train
 import torch
-from torch.utils.data import DataLoader, RandomSampler
-import pickle
 from models.vae import VAE
-from util import plot_uncertainty_bands
 import torch.nn as nn
 import numpy as np
 from models.utils import estimate_optimal_threshold
 
+directory = "checkpoints/"
+kdd = "kdd"
+nsl = "nsl"
+ids = "ids"
+sample_size = 5
+criterions = [nn.MSELoss()]*(sample_size + 1) + [nn.BCELoss()]
+
+batch_size = 32
+lr = 1e-5
+w_d = 1e-5        
+momentum = 0.9   
+epochs = 5
+
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def scaling(df_num, cols):
     std_scaler = MinMaxScaler(feature_range=(0, 1))
@@ -32,85 +44,99 @@ def preprocess(dataframe):
     dataframe = pd.get_dummies(dataframe, columns = ['protocol_type', 'service', 'flag'])
     return dataframe
 
-data_train = pd.read_csv("data/KDD/KDDTrain.txt")
-columns = (['duration','protocol_type','service','flag','src_bytes','dst_bytes','land','wrong_fragment','urgent','hot'
-,'num_failed_logins','logged_in','num_compromised','root_shell','su_attempted','num_root','num_file_creations'
-,'num_shells','num_access_files','num_outbound_cmds','is_host_login','is_guest_login','count','srv_count','serror_rate'
-,'srv_serror_rate','rerror_rate','srv_rerror_rate','same_srv_rate','diff_srv_rate','srv_diff_host_rate','dst_host_count','dst_host_srv_count'
-,'dst_host_same_srv_rate','dst_host_diff_srv_rate','dst_host_same_src_port_rate','dst_host_srv_diff_host_rate','dst_host_serror_rate'
-,'dst_host_srv_serror_rate','dst_host_rerror_rate','dst_host_srv_rerror_rate','outcome','level'])
-data_train.columns = columns
-data_train.loc[data_train['outcome'] == "normal", "outcome"] = 'normal'
-data_train.loc[data_train['outcome'] != 'normal', "outcome"] = 'attack'
+def save_val_scores(model, criterion, config, X_val, y_val):
+    val_score = [criterion(model(x_in.to(device))[0], x_in.to(device)).item() for x_in in X_val]
+    params = estimate_optimal_threshold(val_score, y_val, pos_label=1, nq=100)
+    eta = params["Thresh_star"]
+    np.savetxt(directory + config + "_scores_val_" + model.name + ".csv", val_score)
+    np.savetxt(directory + config + "_threshold_" + model.name + ".csv", [eta])
+    
+def save_test_scores(model, criterion, config, X_test, y_test):
+    test_score = [criterion(model(x_in.to(device))[0], x_in.to(device)).item() for x_in in X_test]
+    eta = np.loadtxt(directory + config + "_threshold_" + model.name + ".csv")
+    eta = eta[0]
+    y_pred = np.array(test_score) > eta
+    y_pred = y_pred.astype(int)
+    np.savetxt(directory + config + "_scores_test_" + model.name + ".csv", test_score)
+    np.savetxt(directory + config + "_labels_test_" + model.name + ".csv", y_pred)
+    
 
-#data_train = data_train.loc[data_train['outcome']=='normal']
-scaled_train = preprocess(data_train)
+def train():
+    
+    X_kdd_train = np.loadtxt("kdd_train.csv")
+    XY_kdd_val = np.loadtxt("kdd_val.csv")
+    X_nsl_train = np.loadtxt("nsl_train.csv")
+    XY_nsl_val = np.loadtxt("nsl_val.csv")
+    X_ids_train = np.loadtxt("ids_train.csv")
+    XY_ids_val = np.loadtxt("ids_val.csv")
+    
+    configs = {kdd: [X_kdd_train, XY_kdd_val],
+              nsl: [X_nsl_train, XY_nsl_val],
+              ids: [X_ids_train, XY_ids_val]}
+    
+    for config in configs:
+        X_train, XY_val = configs[config]
+        X_val, y_val = XY_val[:, :-1], XY_val[:, -1]
+        X_train = torch.from_numpy(X_train)
+        X_val = torch.from_numpy(X_val)
+        
+        for single in range(sample_size):
+            model_name = "ae_model_"+config+"_"+str(single)
+            ae_model = AE(X_train.shape[1], model_name)
+            model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+            ae_model.save()
+            save_val_scores(ae_model, criterions[single], config, X_val, y_val)
+                 
+        #dropout
+        model_name = "ae_dropout_model_"+config
+        ae_dropout_model = AE(X_train.shape[1], model_name, dropout = 0)
+        model_train(ae_dropout_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+        ae_dropout_model.save()
+        save_val_scores(ae_dropout_model, criterions[sample_size], config, X_val, y_val)
+    
+        # VAE
+        model_name = "vae_model_"+config
+        vae = VAE(X_train.shape[1], model_name)
+        vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
+        vae.save()
+        save_val_scores(vae, criterions[-1], config, X_val, y_val)
 
-batch_size = 32
-lr = 1e-5
-w_d = 1e-5        
-momentum = 0.9   
-epochs = 5
-
-train_data_all = scaled_train.sample(frac = 0.9, random_state=200)
-train_data = train_data_all.loc[train_data_all['outcome']==0]
-val_data = scaled_train.drop(train_data_all.index)
-val_data = [val_data, train_data_all.drop(train_data.index)]
-val_data = pd.concat(val_data)
-
-X_train = train_data.drop(['outcome', 'level'] , axis = 1).values
-X_val = val_data.drop(['outcome', 'level'] , axis = 1).values
-
-y_train = train_data['outcome'].values
-y_reg_train = train_data['level'].values
-y_val = val_data['outcome'].values
-y_reg_val = val_data['level'].values
-X_train = X_train.astype('float32')
-X_val = X_val.astype('float32')
-X_sampler = RandomSampler(X_train)
-X_loader = DataLoader(X_train, sampler=X_sampler, batch_size=batch_size)
-
-X_train = torch.from_numpy(X_train)
-X_val = torch.from_numpy(X_val)
-sample_size = 5
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# classical ae
-ae_models = []
-for single in range(sample_size):
-    ae_model = AE(X_train.shape[1], "ae_model_kdd_"+str(single))
-    #model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
-    #ae_model.save()
-    ae_model.load()
-    ae_model.to(device)
-    ae_models.append(ae_model)
-
-#dropout
-ae_dropout_model = AE(X_train.shape[1], "ae_dropout_model_kdd", dropout = 0.2)
-#model_train(ae_dropout_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
-#ae_dropout_model.save()
-ae_dropout_model.load()
-ae_dropout_model.to(device)
-ae_models.append(ae_dropout_model)
-
-# VAE
-vae = VAE(X_train.shape[1], "vae_model_kdd")
-#vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
-#vae.save()
-vae.load()
-vae.to(device)
-ae_models.append(vae)
-
-criterions = [nn.MSELoss()]*6 + [nn.BCELoss()]
-
-
-criterion = nn.BCELoss()
-#scores = [[criterion(vae(x_in.to(device))[0], x_in.to(device)).item() for i in range(sample_size)] for x_in in X_train]
-#scores = np.array(scores)
-#np.savetxt("checkpoints/scores_vae_kdd.txt", scores, delimiter=',')
-scores = np.loadtxt("checkpoints/scores_vae_kdd.csv", delimiter=',')
-plot_uncertainty_bands(scores)
-
-#params = estimate_optimal_threshold(val_score, y_val, pos_label=1, nq=100)
+    
+def evaluate():
+    
+    XY_kdd_test = np.loadtxt("kdd_test.csv")
+    XY_nsl_test = np.loadtxt("nsl_test.csv")
+    XY_ids_test = np.loadtxt("ids_test.csv")
+    
+    configs = {kdd: XY_kdd_test,
+              nsl: XY_nsl_test,
+              ids: XY_ids_test}
+    
+    for config in configs:
+        XY_test = configs[config]
+        X_test, y_test = XY_test[:, :-1], XY_test[:, -1]
+        X_test = torch.from_numpy(X_test)
+        
+        for single in range(sample_size):
+            model_name = "ae_model_"+config+"_"+str(single)
+            ae_model = AE(X_test.shape[1], model_name)
+            ae_model.load()
+            ae_model.to(device)
+            save_test_scores(ae_model, criterions[single], config, X_test, y_test)
+            
+        #dropout
+        model_name = "ae_dropout_model_"+config
+        ae_dropout_model = AE(X_test.shape[1], model_name, dropout = 0.2)
+        ae_dropout_model.load()
+        ae_dropout_model.to(device)
+        save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
+    
+        # VAE
+        model_name = "vae_model_"+config
+        vae = VAE(X_test.shape[1], model_name)
+        vae.load()
+        vae.to(device)
+        save_test_scores(vae, criterions[sample_size], config, X_test, y_test)
 
 
 

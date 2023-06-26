@@ -59,6 +59,8 @@ def inversion_number(E_normal, S_normal, E_abnormal, S_abnormal, eta):
         inr = 2*inr/(n_r*(n_r-1))
     if n_i >= 2:
         ini = 2*ini/(n_i*(n_i-1))
+    
+    
     return inr, ini, (inr + ini)/2
 
 def get_heatmap(metrics, filename):
