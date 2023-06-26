@@ -1,12 +1,12 @@
 import numpy as np
 from scipy.stats import norm, expon
+from cp import CP
 
 class DDM:
-    def __init__(self, Es, eta, filename, d=0.3, phi=0.2):
+    def __init__(self, Es, eta, d=0.3, phi=0.2):
 
         self.Es = Es
         self.eta = eta
-        self.filename = filename
         self.d = d
         self.phi = phi
     
@@ -24,10 +24,17 @@ class DDM:
             R.append(list(xy))
         return np.array(R)
     
-    def distribution_segments(self):
-    
-        E = np.mean(self.Es, axis=1)
-        S = np.std(self.Es, axis=1)
+    def distribution_segments(self, is_conformal = False):
+        
+        if is_conformal:
+            cp = CP()
+            q = cp.quantile(self.Es)
+            E = np.copy(self.Es)
+            n = len(E)
+            S = np.array([q]*n)
+        else:
+            E = np.mean(self.Es, axis=1)
+            S = np.std(self.Es, axis=1)
         
         min_ei = np.min(E)
         max_ei = np.max(E)

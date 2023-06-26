@@ -2,9 +2,8 @@ import numpy as np
 
 class CP:
     
-    def __init__(self, name, alpha = 0.1):
+    def __init__(self, alpha = 0.1):
         self.alpha = alpha
-        self.name = name
         
     def quantile(self, scores): 
         n = len(scores) 
