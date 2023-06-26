@@ -78,3 +78,9 @@ def plot_training_loss(cp, edl, mcd, vae, dbname="kdd"):
     pltlab.legend(loc='best')
     pltlab.savefig(filename+dbname+"_training.png", dpi=300 )
     pltlab.show()
+
+def plot_data_set_distribution(X, y, filename):
+    plt.scatter(X[y==0, 0], X[y==0, 1], s=3, c='blue', alpha=0.5)
+    plt.scatter(X[y==1, 0], X[y==1, 1], s=3, c='red', alpha=0.5)
+    plt.savefig(filename+".png", dpi=300 )
+    plt.show()
