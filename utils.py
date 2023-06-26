@@ -37,12 +37,12 @@ def save_test_scores(model, criterion, config, X_test, y_test):
 
 def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
     
-    X_kdd_train = np.loadtxt(directory_data+"kdd_train.csv")
-    XY_kdd_val = np.loadtxt(directory_data+"kdd_val.csv")
-    X_nsl_train = np.loadtxt(directory_data+"nsl_train.csv")
-    XY_nsl_val = np.loadtxt(directory_data+"directory_data+nsl_val.csv")
-    X_ids_train = np.loadtxt(directory_data+"ids_train.csv")
-    XY_ids_val = np.loadtxt(directory_data+"ids_val.csv")
+    X_kdd_train = np.loadtxt(directory_data+"kdd_train.csv", delimiter=',')
+    XY_kdd_val = np.loadtxt(directory_data+"kdd_val.csv", delimiter=',')
+    X_nsl_train = np.loadtxt(directory_data+"nsl_train.csv", delimiter=',')
+    XY_nsl_val = np.loadtxt(directory_data+"nsl_val.csv", delimiter=',')
+    X_ids_train = np.loadtxt(directory_data+"ids_train.csv", delimiter=',')
+    XY_ids_val = np.loadtxt(directory_data+"ids_val.csv", delimiter=',')
     
     configs = {kdd: [X_kdd_train, XY_kdd_val],
               nsl: [X_nsl_train, XY_nsl_val],
@@ -51,6 +51,9 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
     for config in configs:
         X_train, XY_val = configs[config]
         X_val, y_val = XY_val[:, :-1], XY_val[:, -1]
+        
+        X_val = X_val.astype('float32')
+        X_train = X_train.astype('float32')
         X_train = torch.from_numpy(X_train)
         X_val = torch.from_numpy(X_val)
         
@@ -78,9 +81,9 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
     
 def evaluate():
     
-    XY_kdd_test = np.loadtxt(directory_data+"kdd_test.csv")
-    XY_nsl_test = np.loadtxt(directory_data+"nsl_test.csv")
-    XY_ids_test = np.loadtxt(directory_data+"ids_test.csv")
+    XY_kdd_test = np.loadtxt(directory_data+"kdd_test.csv", delimiter=',')
+    XY_nsl_test = np.loadtxt(directory_data+"nsl_test.csv", delimiter=',')
+    XY_ids_test = np.loadtxt(directory_data+"ids_test.csv", delimiter=',')
     
     configs = {kdd: XY_kdd_test,
               nsl: XY_nsl_test,
@@ -89,6 +92,7 @@ def evaluate():
     for config in configs:
         XY_test = configs[config]
         X_test, y_test = XY_test[:, :-1], XY_test[:, -1]
+        X_test = X_test.astype('float32')
         X_test = torch.from_numpy(X_test)
         
         for single in range(sample_size):

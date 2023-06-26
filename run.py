@@ -26,5 +26,4 @@ def run(is_train = True):
     else:
         evaluate()
     
-def results():
     

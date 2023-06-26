@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.pylab import pltlab
 from sklearn.decomposition import PCA
 
 def heatmap(metrics, filename):
@@ -50,7 +49,7 @@ def redm(normal, abnormal, filename):
     
 def training_loss(cp, edl, mcd, vae, dbname="kdd"):
 
-    filename = "checkpoints/"
+    filename = "outputs/"
     # Load the training and validation loss dictionaries
     cp_train_loss = np.loadtxt(filename+"")
     edl_train_loss = np.loadtxt(filename+"")
@@ -61,24 +60,24 @@ def training_loss(cp, edl, mcd, vae, dbname="kdd"):
     epochs = range(1, len(cp_train_loss)+1)
      
     # Plot and label the training and validation loss values
-    pltlab.plot(epochs, cp_train_loss, label='Training Loss ')
-    pltlab.plot(epochs, edl_train_loss, label='Training Loss ')
-    pltlab.plot(epochs, mcd_train_loss, label='Training Loss ')
-    pltlab.plot(epochs, vae_train_loss, label='Training Loss ')
+    plt.plot(epochs, cp_train_loss, label='Training Loss ')
+    plt.plot(epochs, edl_train_loss, label='Training Loss ')
+    plt.plot(epochs, mcd_train_loss, label='Training Loss ')
+    plt.plot(epochs, vae_train_loss, label='Training Loss ')
 
      
     # Add in a title and axes labels
-    pltlab.title('Training Loss')
-    pltlab.xlabel('Epochs')
-    pltlab.ylabel('Loss')
+    plt.title('Training Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
      
     # Set the tick locations
-    pltlab.xticks(np.arange(0, len(cp_train_loss)+1, 2))
+    plt.xticks(np.arange(0, len(cp_train_loss)+1, 2))
      
     # Display the plot
-    pltlab.legend(loc='best')
-    pltlab.savefig(filename+dbname+"_training.png", dpi=300 )
-    pltlab.show()
+    plt.legend(loc='best')
+    plt.savefig(filename+dbname+"_training.png", dpi=300 )
+    plt.show()
 
 def data_set_distribution(X, y, filename):
     pca = PCA(n_components=2)
