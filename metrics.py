@@ -1,6 +1,8 @@
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 import numpy as np
-from  scipy.stats import wilcoxon, friedmanchisquare, kendalltau
+from  scipy.stats import wilcoxon, friedmanchisquare
+import pingouin as pg
+import pandas as pd
 
 
 def confusion_matrix_metrics(y_true, y_pred):
@@ -53,5 +55,22 @@ def friedman_test_for_8_samples(S1, S2, S3, S4, S5, S6, S7, S8):
     res = friedmanchisquare(S1, S2, S3, S4, S5, S6, S7, S8)
     return res.pvalue
 
-def effect_size(S1, S2):
-    corr, _ = kendalltau(S1, S2)
+def effect_size(S):
+    """
+
+    Parameters
+    ----------
+    S : Array like (n, m), n rows and m samples
+        DESCRIPTION.
+
+    Returns
+    -------
+    Float
+        DESCRIPTION.
+
+    """
+    n, m = S.shape
+    df = pd.DataFrame({
+        'S_'+str(j): {i: S[i, j] for i in range(n)} for j in range(m)})
+    res = pg.friedman(df)
+    return res.loc['Friedman', 'W']
