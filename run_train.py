@@ -1,5 +1,3 @@
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from models.ae import AE
 from models.utils import model_train, vae_train
 import torch
@@ -21,28 +19,7 @@ w_d = 1e-5
 momentum = 0.9   
 epochs = 5
 
-
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-def scaling(df_num, cols):
-    std_scaler = MinMaxScaler(feature_range=(0, 1))
-    std_scaler_temp = std_scaler.fit_transform(df_num)
-    std_df = pd.DataFrame(std_scaler_temp, columns = cols)
-    return std_df
-
-cat_cols = ['is_host_login','protocol_type','service','flag','land', 'logged_in','is_guest_login', 'level', 'outcome']
-
-def preprocess(dataframe):
-    df_num = dataframe.drop(cat_cols, axis=1)
-    num_cols = df_num.columns
-    scaled_df = scaling(df_num, num_cols)
-    dataframe = dataframe.reset_index(drop=True)
-    dataframe.drop(labels=num_cols, axis="columns", inplace=True)
-    dataframe[num_cols] = scaled_df[num_cols]
-    dataframe.loc[dataframe['outcome'] == "normal", "outcome"] = 0
-    dataframe.loc[dataframe['outcome'] != 0, "outcome"] = 1
-    dataframe = pd.get_dummies(dataframe, columns = ['protocol_type', 'service', 'flag'])
-    return dataframe
 
 def save_val_scores(model, criterion, config, X_val, y_val):
     val_score = [criterion(model(x_in.to(device))[0], x_in.to(device)).item() for x_in in X_val]
@@ -125,18 +102,22 @@ def evaluate():
             save_test_scores(ae_model, criterions[single], config, X_test, y_test)
             
         #dropout
-        model_name = "ae_dropout_model_"+config
-        ae_dropout_model = AE(X_test.shape[1], model_name, dropout = 0.2)
-        ae_dropout_model.load()
-        ae_dropout_model.to(device)
-        save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
+        for single in range(sample_size):
+            model_name = "ae_dropout_model_"+config
+            ae_dropout_model = AE(X_test.shape[1], model_name, dropout = 0.2)
+            ae_dropout_model.load()
+            ae_dropout_model.to(device)
+            ae_dropout_model.name = model_name + single
+            save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
     
         # VAE
-        model_name = "vae_model_"+config
-        vae = VAE(X_test.shape[1], model_name)
-        vae.load()
-        vae.to(device)
-        save_test_scores(vae, criterions[sample_size], config, X_test, y_test)
+        for single in range(sample_size):
+            model_name = "vae_model_"+config
+            vae = VAE(X_test.shape[1], model_name)
+            vae.load()
+            vae.to(device)
+            vae.name = model_name + single
+            save_test_scores(vae, criterions[-1], config, X_test, y_test)
 
 
 
