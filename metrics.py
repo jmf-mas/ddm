@@ -74,3 +74,12 @@ def effect_size(S):
         'S_'+str(j): {i: S[i, j] for i in range(n)} for j in range(m)})
     res = pg.friedman(df)
     return res.loc['Friedman', 'W']
+
+def misclassification_rate(y_true, y_pred, E, delta_plus, delta_minus, eta, filename):
+    n_pos = len(E[y_true==1])
+    n_neg = len(E[y_true==0])
+    n_mis = len(E[y_true!=y_pred])
+    n_mis_un = len(E[(y_true!=y_pred) & (eta-delta_minus <=E) & (E<= eta + delta_plus)])
+    n_pos_un = len(E[(y_true==1) & (eta-delta_minus <=E)])
+    n_neg_un = len(E[(y_true==0) & (E<= eta + delta_plus)])
+    return n_pos_un/n_pos, n_neg_un/n_neg, n_mis_un/n_mis

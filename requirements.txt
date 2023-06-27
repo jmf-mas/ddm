@@ -1,8 +1,9 @@
-torch
-numpy
-pandas
-pickle
-pathlib
-scikit-learn
-argparse
-matplotlib
+torch==
+numpy==
+pandas==
+pickle==
+pathlib==
+scikit-learn==
+argparse==
+matplotlib==
+pingouin==
