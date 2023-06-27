@@ -12,7 +12,7 @@ batch_size = 32
 lr = 1e-5
 w_d = 1e-5        
 momentum = 0.9   
-epochs = 5
+epochs = 20
 
 def init():
     Path(directory_model).mkdir(parents=True, exist_ok=True)

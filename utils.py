@@ -48,7 +48,9 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
               nsl: [X_nsl_train, XY_nsl_val],
               ids: [X_ids_train, XY_ids_val]}
     
+    
     for config in configs:
+        print("training on "+config+" data set")
         X_train, XY_val = configs[config]
         X_val, y_val = XY_val[:, :-1], XY_val[:, -1]
         
@@ -57,6 +59,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         X_train = torch.from_numpy(X_train)
         X_val = torch.from_numpy(X_val)
         
+        print("training for EDL")
         for single in range(sample_size):
             model_name = "ae_model_"+config+"_"+str(single)
             ae_model = AE(X_train.shape[1], model_name)
@@ -65,6 +68,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
             save_val_scores(ae_model, criterions[single], config, X_val, y_val)
                  
         #dropout
+        print("training MCD")
         model_name = "ae_dropout_model_"+config
         ae_dropout_model = AE(X_train.shape[1], model_name, dropout = 0)
         model_train(ae_dropout_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
@@ -72,6 +76,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         save_val_scores(ae_dropout_model, criterions[sample_size], config, X_val, y_val)
     
         # VAE
+        print("training VAEs")
         model_name = "vae_model_"+config
         vae = VAE(X_train.shape[1], model_name)
         vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
@@ -90,11 +95,13 @@ def evaluate():
               ids: XY_ids_test}
     
     for config in configs:
+        print("evaluating "+config+" data set")
         XY_test = configs[config]
         X_test, y_test = XY_test[:, :-1], XY_test[:, -1]
         X_test = X_test.astype('float32')
         X_test = torch.from_numpy(X_test)
         
+        print("evaluation for EDL")
         for single in range(sample_size):
             model_name = "ae_model_"+config+"_"+str(single)
             ae_model = AE(X_test.shape[1], model_name)
@@ -103,6 +110,7 @@ def evaluate():
             save_test_scores(ae_model, criterions[single], config, X_test, y_test)
             
         #dropout
+        print("evaluation for MCD")
         for single in range(sample_size):
             model_name = "ae_dropout_model_"+config
             ae_dropout_model = AE(X_test.shape[1], model_name, dropout = 0.2)
@@ -112,6 +120,7 @@ def evaluate():
             save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
     
         # VAE
+        print("evaluation for VAEs")
         for single in range(sample_size):
             model_name = "vae_model_"+config
             vae = VAE(X_test.shape[1], model_name)
