@@ -61,11 +61,14 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         
         print("training for EDL")
         for single in range(sample_size):
+            print("training for ae_model_"+str(single))
             model_name = "ae_model_"+config+"_"+str(single)
             ae_model = AE(X_train.shape[1], model_name)
             model_train(ae_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
             ae_model.save()
             save_val_scores(ae_model, criterions[single], config, X_val, y_val)
+            print("training for ae_model_"+str(single)+" done")
+            
                  
         #dropout
         print("training MCD")
@@ -74,6 +77,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         model_train(ae_dropout_model, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
         ae_dropout_model.save()
         save_val_scores(ae_dropout_model, criterions[sample_size], config, X_val, y_val)
+        print("training MCD done")
     
         # VAE
         print("training VAEs")
@@ -82,6 +86,9 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         vae_train(vae, X_train, l_r = lr, w_d = w_d, n_epochs = epochs, batch_size = batch_size)
         vae.save()
         save_val_scores(vae, criterions[-1], config, X_val, y_val)
+        print("training VAEs done")
+        print("training on "+config+" data set done")
+        print("---------------------------------------------------------------------")
 
     
 def evaluate():
@@ -103,11 +110,13 @@ def evaluate():
         
         print("evaluation for EDL")
         for single in range(sample_size):
+            print("evaluation for ae_model_"+str(single))
             model_name = "ae_model_"+config+"_"+str(single)
             ae_model = AE(X_test.shape[1], model_name)
             ae_model.load()
             ae_model.to(device)
             save_test_scores(ae_model, criterions[single], config, X_test, y_test)
+            print("evaluation for ae_model_"+str(single)+" done")
             
         #dropout
         print("evaluation for MCD")
@@ -118,6 +127,7 @@ def evaluate():
             ae_dropout_model.to(device)
             ae_dropout_model.name = model_name + single
             save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
+        print("evaluation for MCD done")
     
         # VAE
         print("evaluation for VAEs")
@@ -128,6 +138,8 @@ def evaluate():
             vae.to(device)
             vae.name = model_name + single
             save_test_scores(vae, criterions[-1], config, X_test, y_test)
+        print("evaluation for VAEs done")
+        print("evaluating "+config+" data set done")
 
 
 
