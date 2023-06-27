@@ -8,6 +8,7 @@ from sklearn import metrics as sk_metrics
 
 file_extension = ".csv"
 parent_name ="checkpoints/"
+output_directory ="outputs/"
 
 
 class Loader(torch.utils.data.Dataset):
@@ -54,7 +55,7 @@ def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_siz
         errors.append(sum(epoch_loss)/len(epoch_loss))
         print("epoch {}: {}".format(epoch+1, sum(epoch_loss)/len(epoch_loss)))
     if save_errors:
-        np.savetxt(parent_name+model.name+file_extension, errors, delimiter=',')
+        np.savetxt(output_directory+"_training_loss_"+model.name+file_extension, errors, delimiter=',')
 
 def vae_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size = 32, save_errors = True):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -85,7 +86,7 @@ def vae_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size 
         errors.append(sum(epoch_loss)/len(epoch_loss))
         print(f"Epoch {epoch}: reconstruction_loss = {loss:.4f}, kl_loss = {kl_loss:.4f}, total_loss = {total_loss:.4f}")
     if save_errors:
-        np.savetxt(parent_name+model.name+file_extension, errors, delimiter=',')
+        np.savetxt(output_directory+"_training_loss_"+model.name+file_extension, errors, delimiter=',')
             
 def model_eval(model, x):
     loss_fn = nn.MSELoss()
