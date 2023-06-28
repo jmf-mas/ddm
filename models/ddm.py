@@ -60,8 +60,8 @@ class DDM:
         E_star = ES_star[:, 0]
         normal_params, uncertain_params, abnormal_params = self.optimal_params(E_minus, E_star, E_plus)
         
-        normal_model = lambda x: expon.pdf(x, loc=normal_params[0], scale=normal_params[1])
-        abnormal_model = lambda x: expon.cdf(x, loc=abnormal_params[0], scale=abnormal_params[1])
+        normal_model = lambda x: expon.pdf(x, loc=0, scale=normal_params[1])
+        abnormal_model = lambda x: expon.cdf(x, loc=self.eta, scale=abnormal_params[1])
         uncertain_model = lambda x: norm.pdf(x, loc=uncertain_params[0], scale=uncertain_params[1])
         
         E_normal, S_normal = zip(*sorted(zip(E_normal, S_normal), reverse=False))
@@ -72,8 +72,20 @@ class DDM:
         E_abnormal = list(E_abnormal)
         S_abnormal = np.array(list(S_abnormal))
         
+        
         y_n_n, y_a_n, y_u_n = normal_model(E_normal), abnormal_model(E_normal), uncertain_model(E_normal)
         y_n_a, y_a_a, y_u_a = normal_model(E_abnormal), abnormal_model(E_abnormal), uncertain_model(E_abnormal)
+        # making probability distribution
+        dx_n = [abs(E_normal[i-1]-E_normal[i]) for i in range(len(E_normal))]
+        dx_n = np.mean(dx_n)
+        dx_a = [abs(E_abnormal[i-1]-E_abnormal[i]) for i in range(len(E_abnormal))]
+        dx_a = np.mean(dx_a)
+        y_n_n *=dx_n
+        y_a_n *=dx_n
+        y_u_n *=dx_n
+        y_n_a *=dx_a
+        y_a_a *=dx_a
+        y_u_a *=dx_a
         
         y_n = np.concatenate((y_n_n.reshape(-1, 1), y_a_n.reshape(1, -1).T), axis=1)
         y_n = np.concatenate((y_n, y_u_n.reshape(1, -1).T), axis=1)
@@ -90,6 +102,8 @@ class DDM:
     
         p_normal = normal_model(E_normal)
         p_abnormal = abnormal_model(E_abnormal)   
+        p_normal *=dx_n
+        p_abnormal *=dx_a
         return (E_normal, S_normal, S_n, p_normal), (E_abnormal, S_abnormal, S_a, p_abnormal)
     
      
