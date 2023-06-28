@@ -88,9 +88,9 @@ class DDM:
         S_n = np.multiply(y_n[:, 2], S_normal)
         S_a = np.multiply(y_a[:, 2], S_abnormal)
     
-        y_normal = normal_model(E_normal)
-        y_abnormal = abnormal_model(E_abnormal)   
-        return (E_normal, S_normal, S_n, y_normal), (E_abnormal, S_abnormal, S_a, y_abnormal)
+        p_normal = normal_model(E_normal)
+        p_abnormal = abnormal_model(E_abnormal)   
+        return (E_normal, S_normal, S_n, p_normal), (E_abnormal, S_abnormal, S_a, p_abnormal)
     
      
     

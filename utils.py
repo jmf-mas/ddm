@@ -28,7 +28,7 @@ def save_val_scores(model, criterion, config, X_val, y_val):
 def save_test_scores(model, criterion, config, X_test, y_test):
     test_score = [criterion(model(x_in.to(device))[0], x_in.to(device)).item() for x_in in X_test]
     eta = np.loadtxt(directory_output + config + "_threshold_" + model.name + ".csv")
-    eta = eta[0]
+    #eta = eta[0]
     y_pred = np.array(test_score) > eta
     y_pred = y_pred.astype(int)
     np.savetxt(directory_output + config + "_scores_test_" + model.name + ".csv", test_score)
@@ -125,7 +125,7 @@ def evaluate():
             ae_dropout_model = AE(X_test.shape[1], model_name, dropout = 0.2)
             ae_dropout_model.load()
             ae_dropout_model.to(device)
-            ae_dropout_model.name = model_name + single
+            ae_dropout_model.name = model_name + str(single)
             save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
         print("evaluation for MCD done")
     
@@ -136,7 +136,7 @@ def evaluate():
             vae = VAE(X_test.shape[1], model_name)
             vae.load()
             vae.to(device)
-            vae.name = model_name + single
+            vae.name = model_name + str(single)
             save_test_scores(vae, criterions[-1], config, X_test, y_test)
         print("evaluation for VAEs done")
         print("evaluating "+config+" data set done")
