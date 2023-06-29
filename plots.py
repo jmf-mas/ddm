@@ -1,32 +1,26 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
+import seaborn as sns
+import pandas as pd
 
 def heatmap(metrics, filename):
 
 
     uq_methods = ["EDL", "MCD", "VAEs", "CP",
                   "EDL+", "MCD+", "VAEs+", "CP+"]
-    
-    metrics = np.round(metrics, 2)
-    
-    
-    fig, ax = plt.subplots()
-    im = ax.imshow(metrics)
-    ax.set_xticks(np.arange(len(uq_methods)))
-    ax.set_yticks(np.arange(len(uq_methods)))
-    ax.set_xticklabels(uq_methods)
-    ax.set_yticklabels(uq_methods)
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-             rotation_mode="anchor")
-    
-    for i in range(len(uq_methods)):
-        for j in range(len(uq_methods)):
-            text = ax.text(j, i, metrics[i, j], ha="center", va="center", color="w")
-    
-    fig.tight_layout()
+
+ 
+    # Create a dataset
+    df = pd.DataFrame(metrics, columns=uq_methods)
+
+    # plot using a color palette
+    sns.heatmap(df, cmap="YlGnBu")
     plt.savefig(filename+".png", dpi=300)
     plt.show()
+    
+    metrics = np.round(metrics, 2)
+
     
 def redm(normal, abnormal, filename, scale_n = 0.002, scale_a = 0.0002):
     E_normal, S_normal, S_n, y_normal = normal
@@ -56,11 +50,11 @@ def training_loss(cp, edl, mcd, vae, dbname="kdd"):
     plt.plot(epochs, cp, label='CP', color='black')
     plt.plot(epochs, edl, label='EDL', color='red')
     plt.plot(epochs, mcd, label='MCD', color='blue')
-    plt.plot(epochs, vae, label='VAEs', color='green')
+    #plt.plot(epochs, vae, label='VAEs', color='green')
 
      
     # Add in a title and axes labels
-    plt.title('Training Loss')
+    #plt.title('Training Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
      

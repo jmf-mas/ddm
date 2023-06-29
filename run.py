@@ -15,7 +15,7 @@ lr = 1e-5
 w_d = 1e-5        
 momentum = 0.9   
 epochs = 20
-is_train = False
+is_train = True
 
 def init():
     Path(directory_model).mkdir(parents=True, exist_ok=True)

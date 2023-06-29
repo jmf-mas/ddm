@@ -46,7 +46,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
     #configs = {kdd: [X_kdd_train, XY_kdd_val],
     #          nsl: [X_nsl_train, XY_nsl_val],
     #          ids: [X_ids_train, XY_ids_val]}
-    configs = {nsl: [X_nsl_train, XY_nsl_val]}
+    configs = {ids: [X_ids_train, XY_ids_val]}
     
     
     for config in configs:
@@ -101,7 +101,7 @@ def evaluate():
     #         nsl: XY_nsl_test,
     #          ids: XY_ids_test}
     
-    configs = {nsl: XY_nsl_test}
+    configs = {ids: XY_ids_test}
     
     for config in configs:
         print("evaluating "+config+" data set")

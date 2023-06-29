@@ -133,7 +133,7 @@ def process_raw_data():
     y = data_nsl['outcome'].values
     
     data_nsl = np.concatenate((X, y.reshape(1, -1).T), axis=1)
-    np.savetxt("data/nsl.csv", data_nsl, delimiter=',')
+    #np.savetxt("data/nsl.csv", data_nsl, delimiter=',')
     
     # kdd cup
     print("processing kdd")
@@ -145,16 +145,16 @@ def process_raw_data():
     data_kdd.loc[data_kdd['outcome'] != 'normal', 'outcome'] = 'attack'
     data_kdd = preprocess_kdd_data(data_kdd)
     data_kdd = np.concatenate((X, y.reshape(1, -1).T), axis=1)
-    np.savetxt("data/kdd.csv", data_kdd, delimiter=',')
+    #np.savetxt("data/kdd.csv", data_kdd, delimiter=',')
     
 def split_and_save_data():
     
     XY = np.loadtxt(data_directory+"kdd.csv", delimiter=',')
-    save_processed_data(XY, "kdd", train_rate = .65, val_rate = 0.2)
+    #save_processed_data(XY, "kdd", train_rate = .65, val_rate = 0.2)
     XY = np.loadtxt(data_directory+"nsl.csv", delimiter=',')
-    save_processed_data(XY, "nsl", train_rate = .65, val_rate = 0.2)
+    #save_processed_data(XY, "nsl", train_rate = .65, val_rate = 0.2)
     XY = np.loadtxt(data_directory+"ids.csv", delimiter=',')
-    save_processed_data(XY, "ids", train_rate = .65, val_rate = 0.2)
+    save_processed_data(XY, "ids", train_rate = .11, val_rate = 0.3)
 
     
 
