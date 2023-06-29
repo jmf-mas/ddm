@@ -1,11 +1,11 @@
 import numpy as np
 from scipy.stats import norm, expon
-from cp import CP
 
 class DDM:
-    def __init__(self, Es, eta, d=0.3, phi=0.2):
+    def __init__(self, Es, y, eta, d=0.3, phi=0.2):
 
         self.Es = Es
+        self.y = y
         self.eta = eta
         self.d = d
         self.phi = phi
@@ -45,12 +45,12 @@ class DDM:
         delta_minus = self.d*d_minus
         delta_plus = self.d*d_plus
         
-        ES = np.concatenate((E.reshape(-1, 1), S.reshape(1, -1).T), axis=1)
+        ES = np.concatenate((E.reshape(-1, 1), S.reshape(1, -1).T, self.y.reshape(1, -1).T), axis=1)
         # for plots
         ES_normal = np.array(list(filter(lambda esi: esi[0] < self.eta, ES)))
         ES_abnormal = np.array(list(filter(lambda esi: esi[0] >= self.eta, ES)))
-        E_normal, S_normal = ES_normal[:, 0], ES_normal[:, 1]
-        E_abnormal, S_abnormal = ES_abnormal[:, 0], ES_abnormal[:, 1]
+        E_normal, S_normal, y_normal = ES_normal[:, 0], ES_normal[:, 1], ES_normal[:, 2]
+        E_abnormal, S_abnormal, y_abnormal = ES_abnormal[:, 0], ES_abnormal[:, 1], ES_abnormal[:, 2]
         # for getting distribution parameters
         ES_minus = np.array(list(filter(lambda esi: esi[0] < self.eta - (1-self.phi)*delta_minus, ES)))
         ES_plus = np.array(list(filter(lambda esi: esi[0] > self.eta + (1-self.phi)*delta_plus, ES)))
@@ -64,13 +64,16 @@ class DDM:
         abnormal_model = lambda x: expon.cdf(x, loc=self.eta, scale=abnormal_params[1])
         uncertain_model = lambda x: norm.pdf(x, loc=uncertain_params[0], scale=uncertain_params[1])
         
-        E_normal, S_normal = zip(*sorted(zip(E_normal, S_normal), reverse=False))
-        E_abnormal, S_abnormal = zip(*sorted(zip(E_abnormal, S_abnormal), reverse=False))
+        E_normal, S_normal, y_normal = zip(*sorted(zip(E_normal, S_normal, y_normal), reverse=False))
+        E_abnormal, S_abnormal, y_abnormal = zip(*sorted(zip(E_abnormal, S_abnormal, y_abnormal), reverse=False))
         
         E_normal = list(E_normal)
         S_normal = np.array(list(S_normal))
+        y_normal = np.array(list(y_normal))
         E_abnormal = list(E_abnormal)
         S_abnormal = np.array(list(S_abnormal))
+        y_abnormal = np.array(list(y_abnormal))
+        
         
         
         y_n_n, y_a_n, y_u_n = normal_model(E_normal), abnormal_model(E_normal), uncertain_model(E_normal)
@@ -104,7 +107,17 @@ class DDM:
         p_abnormal = abnormal_model(E_abnormal)   
         p_normal *=dx_n
         p_abnormal *=dx_a
-        return (E_normal, S_normal, S_n, p_normal), (E_abnormal, S_abnormal, S_a, p_abnormal)
+        return (E_normal, S_normal, S_n, p_normal, y_normal), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal)
+
+class CP:
+    
+    def __init__(self, alpha = 0.1):
+        self.alpha = alpha
+        
+    def quantile(self, scores): 
+        n = len(scores) 
+        q_val = np.ceil((1 - self.alpha) * (n + 1)) / n
+        return np.quantile(scores, q_val, method="higher")
     
      
     

@@ -14,7 +14,7 @@ batch_size = 32
 lr = 1e-5
 w_d = 1e-5        
 momentum = 0.9   
-epochs = 2
+epochs = 20
 is_train = False
 
 def init():
@@ -27,8 +27,7 @@ def run(batch_size, lr, w_d, momentum, epochs, is_train):
     if is_train:
         init()
         train(batch_size, lr, w_d, momentum, epochs)
-    else:
-        evaluate()
+    evaluate()
 
 if __name__ == "__main__":
     #parser = argparse.ArgumentParser(description="CUQ-AE-REDM Framework for uncertainty quantification on AEs-based methods for anomaly detection",

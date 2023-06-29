@@ -25,9 +25,8 @@ def save_val_scores(model, criterion, config, X_val, y_val):
     np.savetxt(directory_output + config + "_scores_val_" + model.name + ".csv", val_score)
     np.savetxt(directory_output + config + "_threshold_" + model.name + ".csv", [eta])
     
-def save_test_scores(model, criterion, config, X_test, y_test):
+def save_test_scores(model, criterion, config, X_test, y_test, eta):
     test_score = [criterion(model(x_in.to(device))[0], x_in.to(device)).item() for x_in in X_test]
-    eta = np.loadtxt(directory_output + config + "_threshold_" + model.name + ".csv")
     #eta = eta[0]
     y_pred = np.array(test_score) > eta
     y_pred = y_pred.astype(int)
@@ -44,9 +43,10 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
     X_ids_train = np.loadtxt(directory_data+"ids_train.csv", delimiter=',')
     XY_ids_val = np.loadtxt(directory_data+"ids_val.csv", delimiter=',')
     
-    configs = {kdd: [X_kdd_train, XY_kdd_val],
-              nsl: [X_nsl_train, XY_nsl_val],
-              ids: [X_ids_train, XY_ids_val]}
+    #configs = {kdd: [X_kdd_train, XY_kdd_val],
+    #          nsl: [X_nsl_train, XY_nsl_val],
+    #          ids: [X_ids_train, XY_ids_val]}
+    configs = {nsl: [X_nsl_train, XY_nsl_val]}
     
     
     for config in configs:
@@ -97,9 +97,11 @@ def evaluate():
     XY_nsl_test = np.loadtxt(directory_data+"nsl_test.csv", delimiter=',')
     XY_ids_test = np.loadtxt(directory_data+"ids_test.csv", delimiter=',')
     
-    configs = {kdd: XY_kdd_test,
-              nsl: XY_nsl_test,
-              ids: XY_ids_test}
+    #configs = {kdd: XY_kdd_test,
+    #         nsl: XY_nsl_test,
+    #          ids: XY_ids_test}
+    
+    configs = {nsl: XY_nsl_test}
     
     for config in configs:
         print("evaluating "+config+" data set")
@@ -108,36 +110,42 @@ def evaluate():
         X_test = X_test.astype('float32')
         X_test = torch.from_numpy(X_test)
         
-        print("evaluation for EDL")
-        for single in range(sample_size):
-            print("evaluation for ae_model_"+str(single))
-            model_name = "ae_model_"+config+"_"+str(single)
-            ae_model = AE(X_test.shape[1], model_name)
-            ae_model.load()
-            ae_model.to(device)
-            save_test_scores(ae_model, criterions[single], config, X_test, y_test)
-            print("evaluation for ae_model_"+str(single)+" done")
+        # print("evaluation for EDL")
+        # for single in range(sample_size):
+        #     print("evaluation for ae_model_"+str(single))
+        #     model_name = "ae_model_"+config+"_"+str(single)
+        #     ae_model = AE(X_test.shape[1], model_name)
+        #     ae_model.load()
+        #     ae_model.to(device)
+        #     save_test_scores(ae_model, criterions[single], config, X_test, y_test)
+        #     print("evaluation for ae_model_"+str(single)+" done")
             
         #dropout
         print("evaluation for MCD")
         for single in range(sample_size):
+            print("evaluation for ae_dropout_model_"+str(single))
             model_name = "ae_dropout_model_"+config
+            eta = np.loadtxt(directory_output + config + "_threshold_" + model_name + ".csv")
             ae_dropout_model = AE(X_test.shape[1], model_name, dropout = 0.2)
             ae_dropout_model.load()
             ae_dropout_model.to(device)
             ae_dropout_model.name = model_name + str(single)
-            save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test)
+            save_test_scores(ae_dropout_model, criterions[sample_size], config, X_test, y_test, eta)
+            print("evaluation for ae_dropout_model_"+str(single)+ " done")
         print("evaluation for MCD done")
     
         # VAE
         print("evaluation for VAEs")
         for single in range(sample_size):
+            print("evaluation for vae_model_"+str(single))
             model_name = "vae_model_"+config
+            eta = np.loadtxt(directory_output + config + "_threshold_" + model_name + ".csv")
             vae = VAE(X_test.shape[1], model_name)
             vae.load()
             vae.to(device)
             vae.name = model_name + str(single)
-            save_test_scores(vae, criterions[-1], config, X_test, y_test)
+            save_test_scores(vae, criterions[-1], config, X_test, y_test, eta)
+            print("evaluation for vae_model_"+str(single)+ " done")
         print("evaluation for VAEs done")
         print("evaluating "+config+" data set done")
 
