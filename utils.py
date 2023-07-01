@@ -60,7 +60,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         X_val = torch.from_numpy(X_val)
         
         print("training for EDL")
-        for single in range(sample_size):
+        for single in range(4, sample_size):
             print("training for ae_model_"+str(single))
             model_name = "ae_model_"+config+"_"+str(single)
             ae_model = AE(X_train.shape[1], model_name)
@@ -100,8 +100,10 @@ def evaluate():
     #configs = {kdd: XY_kdd_test,
     #         nsl: XY_nsl_test,
     #          ids: XY_ids_test}
-    
-    configs = {ids: XY_ids_test}
+    n = [i for i in range(len(XY_ids_test))]
+    selection = np.random.choice(n, size = 70000, replace=False)
+    np.savetxt(directory_output + "_selection_ids.csv", selection)
+    configs = {ids: XY_ids_test[selection]}
     
     for config in configs:
         print("evaluating "+config+" data set")
@@ -110,15 +112,16 @@ def evaluate():
         X_test = X_test.astype('float32')
         X_test = torch.from_numpy(X_test)
         
-        # print("evaluation for EDL")
-        # for single in range(sample_size):
-        #     print("evaluation for ae_model_"+str(single))
-        #     model_name = "ae_model_"+config+"_"+str(single)
-        #     ae_model = AE(X_test.shape[1], model_name)
-        #     ae_model.load()
-        #     ae_model.to(device)
-        #     save_test_scores(ae_model, criterions[single], config, X_test, y_test)
-        #     print("evaluation for ae_model_"+str(single)+" done")
+        print("evaluation for EDL")
+        for single in range(sample_size):
+            print("evaluation for ae_model_"+str(single))
+            model_name = "ae_model_"+config+"_"+str(single)
+            eta = np.loadtxt(directory_output + config + "_threshold_" + model_name + ".csv")
+            ae_model = AE(X_test.shape[1], model_name)
+            ae_model.load()
+            ae_model.to(device)
+            save_test_scores(ae_model, criterions[single], config, X_test, y_test, eta)
+            print("evaluation for ae_model_"+str(single)+" done")
             
         #dropout
         print("evaluation for MCD")

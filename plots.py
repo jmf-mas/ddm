@@ -12,10 +12,11 @@ def heatmap(metrics, filename):
 
  
     # Create a dataset
-    df = pd.DataFrame(metrics, columns=uq_methods)
+    metrics = np.round(metrics, 2)
+    df = pd.DataFrame(metrics, columns=uq_methods, index = uq_methods)
 
     # plot using a color palette
-    sns.heatmap(df, cmap="YlGnBu")
+    sns.heatmap(df, cmap="YlGnBu", annot=True)
     plt.savefig(filename+".png", dpi=300)
     plt.show()
     
@@ -27,17 +28,21 @@ def redm(normal, abnormal, filename, scale_n = 0.002, scale_a = 0.0002):
     E_abnormal, S_abnormal, S_a, y_abnormal = abnormal
     
     fig, axs = plt.subplots(2, 2)
+    y_n_min = min(np.min(y_normal - scale_n * S_normal), np.min(y_normal - scale_n * S_n))
+    y_n_max = max(np.max(y_normal + scale_n * S_normal), np.max(y_normal + scale_n * S_n))
     axs[0, 0].plot(E_normal, y_normal, '-b', label='regularity')
-    #axs[0, 0].set_ylim(0, 5)
+    axs[0, 0].set_ylim(y_n_min, y_n_max)
     axs[0, 0].fill_between(E_normal, y_normal - scale_n * S_normal, y_normal + scale_n * S_normal, alpha=0.6, color='#86cfac', zorder=5)
     axs[0, 1].plot(E_normal, y_normal, '-b', label='regularity')
-    #axs[0, 1].set_ylim(0, 5)
+    axs[0, 1].set_ylim(y_n_min, y_n_max)
     axs[0, 1].fill_between(E_normal, y_normal - scale_n * S_n, y_normal + scale_n * S_n, alpha=0.6, color='#86cfac', zorder=5)
     axs[1, 0].plot(E_abnormal, y_abnormal, '-k', label='regularity')
-    #axs[1, 0].set_ylim(-1, 3)
+    y_a_min = min(np.min(y_abnormal - scale_a * S_abnormal), np.min(y_abnormal - scale_a * S_a))
+    y_a_max = max(np.max(y_abnormal + scale_a * S_abnormal), np.max(y_abnormal + scale_a * S_a))
+    axs[1, 0].set_ylim(y_a_min, y_a_max)
     axs[1, 0].fill_between(E_abnormal, y_abnormal - scale_a * S_abnormal, y_abnormal + scale_a * S_abnormal, alpha=0.6, color='#ffcccc', zorder=5)
     axs[1, 1].plot(E_abnormal, y_abnormal, '-k', label='regularity')
-    #axs[1, 1].set_ylim(-1, 3)
+    axs[1, 1].set_ylim(y_a_min, y_a_max)
     axs[1, 1].fill_between(E_abnormal, y_abnormal - scale_a * S_a, y_abnormal + scale_a * S_a, alpha=0.6, color='#ffcccc', zorder=5)
     plt.savefig(filename+".png", dpi=300 )
     
