@@ -43,10 +43,9 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
     X_ids_train = np.loadtxt(directory_data+"ids_train.csv", delimiter=',')
     XY_ids_val = np.loadtxt(directory_data+"ids_val.csv", delimiter=',')
     
-    #configs = {kdd: [X_kdd_train, XY_kdd_val],
-    #          nsl: [X_nsl_train, XY_nsl_val],
-    #          ids: [X_ids_train, XY_ids_val]}
-    configs = {ids: [X_ids_train, XY_ids_val]}
+    configs = {kdd: [X_kdd_train, XY_kdd_val],
+              nsl: [X_nsl_train, XY_nsl_val],
+              ids: [X_ids_train, XY_ids_val]}
     
     
     for config in configs:
@@ -97,13 +96,13 @@ def evaluate():
     XY_nsl_test = np.loadtxt(directory_data+"nsl_test.csv", delimiter=',')
     XY_ids_test = np.loadtxt(directory_data+"ids_test.csv", delimiter=',')
     
-    #configs = {kdd: XY_kdd_test,
-    #         nsl: XY_nsl_test,
-    #          ids: XY_ids_test}
+    
     n = [i for i in range(len(XY_ids_test))]
     selection = np.random.choice(n, size = 70000, replace=False)
     np.savetxt(directory_output + "_selection_ids.csv", selection)
-    configs = {ids: XY_ids_test[selection]}
+    configs = {kdd: XY_kdd_test,
+             nsl: XY_nsl_test,
+              ids: XY_ids_test[selection]}
     
     for config in configs:
         print("evaluating "+config+" data set")
