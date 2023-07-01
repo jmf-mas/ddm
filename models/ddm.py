@@ -9,6 +9,7 @@ class DDM:
         self.eta = eta
         self.d = d
         self.phi = phi
+        self.ddm_params = None
     
     
     def optimal_params(self, E_minus, E_star, E_plus):
@@ -64,6 +65,8 @@ class DDM:
         abnormal_model = lambda x: expon.cdf(x, loc=self.eta, scale=abnormal_params[1])
         uncertain_model = lambda x: norm.pdf(x, loc=uncertain_params[0], scale=uncertain_params[1])
         
+        self.ddm_params = DDMPARAMS(E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
+        
         E_normal, S_normal, y_normal = zip(*sorted(zip(E_normal, S_normal, y_normal), reverse=False))
         E_abnormal, S_abnormal, y_abnormal = zip(*sorted(zip(E_abnormal, S_abnormal, y_abnormal), reverse=False))
         
@@ -118,6 +121,29 @@ class CP:
         n = len(scores) 
         q_val = np.ceil((1 - self.alpha) * (n + 1)) / n
         return np.quantile(scores, q_val, method="higher")
+
+class DDMPARAMS:
+    
+    def __init__(self, E_minus, E_star, E_plus, n_model, u_model, a_model):
+        self.E_minus = np.array(E_minus)
+        self.E_plus = np.array(E_plus)
+        self.E_star = np.array(E_star)
+        
+        self.n_model = n_model
+        self.u_model = u_model
+        self.a_model = a_model
+        
+        self.E_minus.sort()
+        self.E_plus.sort()
+        self.E_star.sort()
+        
+        dx_minus = [abs(self.E_minus[i-1]-self.E_minus[i]) for i in range(len(self.E_minus))]
+        dx_plus = [abs(self.E_plus[i-1]-self.E_plus[i]) for i in range(len(self.E_plus))]
+        dx_star = [abs(self.E_star[i-1]-self.E_star[i]) for i in range(len(self.E_star))]
+        
+        self.dx_minus = np.mean(dx_minus)
+        self.dx_plus = np.mean(dx_plus)
+        self.dx_star = np.mean(dx_star)
     
      
     
