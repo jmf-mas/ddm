@@ -27,7 +27,6 @@ def save_val_scores(model, criterion, config, X_val, y_val):
     
 def save_test_scores(model, criterion, config, X_test, y_test, eta):
     test_score = [criterion(model(x_in.to(device))[0], x_in.to(device)).item() for x_in in X_test]
-    #eta = eta[0]
     y_pred = np.array(test_score) > eta
     y_pred = y_pred.astype(int)
     np.savetxt(directory_output + config + "_scores_test_" + model.name + ".csv", test_score)

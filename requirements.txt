@@ -6,3 +6,4 @@ argparse==1.1
 matplotlib==3.3.4
 pingouin==0.5.3
 torchmetrics==0.11.4
+tqdm==4.51.0

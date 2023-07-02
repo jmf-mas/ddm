@@ -5,6 +5,7 @@ import torch.nn as nn
 import pickle
 from pathlib import Path
 from sklearn import metrics as sk_metrics
+from tqdm import tqdm
 
 file_extension = ".csv"
 parent_name ="checkpoints/"
@@ -40,7 +41,7 @@ def model_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_siz
     criterion = nn.MSELoss(reduction='mean')
     model.train(True)
     errors = []
-    for epoch in range(n_epochs):
+    for epoch in tqdm(range(n_epochs)):
         epoch_loss = []
         for step, batch in enumerate(X_loader):
             x_in = batch.type(torch.float32)
@@ -63,7 +64,7 @@ def vae_train(model, X_loader, l_r = 1e-2, w_d = 1e-5, n_epochs = 1, batch_size 
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=l_r, weight_decay=w_d)
     errors = []
-    for epoch in range(n_epochs):
+    for epoch in tqdm(range(n_epochs)):
         epoch_loss = []
         for step, batch in enumerate(X_loader):
             x_in = batch.type(torch.float32)

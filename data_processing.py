@@ -115,6 +115,7 @@ def process_raw_data():
     data_ids = pd.read_csv("data/02-14-2018.csv")
     data_ids = preprocess_ids_data(data_ids)
     np.savetxt("data/ids.csv", data_ids.values, delimiter=',')
+    print("processing ids done")
     
     # nsl
     print("processing nsl")
@@ -133,28 +134,31 @@ def process_raw_data():
     y = data_nsl['outcome'].values
     
     data_nsl = np.concatenate((X, y.reshape(1, -1).T), axis=1)
-    #np.savetxt("data/nsl.csv", data_nsl, delimiter=',')
+    np.savetxt("data/nsl.csv", data_nsl, delimiter=',')
+    print("processing nsl done")
     
     # kdd cup
     print("processing kdd")
     file_id='1by815Yv3oUjcW0zwRjVrgfkCuEQ-bxlW'
     dwn_url='https://drive.google.com/uc?id=' + file_id
-    data_kdd = pd.read_csv("data/kdd.txt", header=None)
+    data_kdd = pd.read_csv("data/kddcup.txt", header=None)
     data_kdd.columns = kdd_columns
     data_kdd.loc[data_kdd['outcome'] == 'normal.', 'outcome'] = 'normal'
     data_kdd.loc[data_kdd['outcome'] != 'normal', 'outcome'] = 'attack'
     data_kdd = preprocess_kdd_data(data_kdd)
     data_kdd = np.concatenate((X, y.reshape(1, -1).T), axis=1)
-    #np.savetxt("data/kdd.csv", data_kdd, delimiter=',')
+    np.savetxt("data/kdd.csv", data_kdd, delimiter=',')
+    print("processing kdd done")
     
 def split_and_save_data():
-    
+    print("splitting data: train, val and test")
     XY = np.loadtxt(data_directory+"kdd.csv", delimiter=',')
-    #save_processed_data(XY, "kdd", train_rate = .65, val_rate = 0.2)
+    save_processed_data(XY, "kdd", train_rate = .65, val_rate = 0.2)
     XY = np.loadtxt(data_directory+"nsl.csv", delimiter=',')
-    #save_processed_data(XY, "nsl", train_rate = .65, val_rate = 0.2)
+    save_processed_data(XY, "nsl", train_rate = .65, val_rate = 0.2)
     XY = np.loadtxt(data_directory+"ids.csv", delimiter=',')
     save_processed_data(XY, "ids", train_rate = .11, val_rate = 0.3)
+    print("splitting data done")
 
     
 
