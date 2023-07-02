@@ -65,7 +65,6 @@ class DDM:
         abnormal_model = lambda x: expon.cdf(x, loc=self.eta, scale=abnormal_params[1])
         uncertain_model = lambda x: norm.pdf(x, loc=uncertain_params[0], scale=uncertain_params[1])
         
-        self.ddm_params = DDMPARAMS(E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
         
         E_normal, S_normal, y_normal = zip(*sorted(zip(E_normal, S_normal, y_normal), reverse=False))
         E_abnormal, S_abnormal, y_abnormal = zip(*sorted(zip(E_abnormal, S_abnormal, y_abnormal), reverse=False))
@@ -110,7 +109,11 @@ class DDM:
         p_abnormal = abnormal_model(E_abnormal)   
         p_normal *=dx_n
         p_abnormal *=dx_a
-        return (E_normal, S_normal, S_n, p_normal, y_normal), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal)
+        normal, abnormal = (E_normal, S_normal, S_n, p_normal, y_normal), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal)
+        
+        self.params = PARAMS(normal, abnormal, E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
+        
+        return normal, abnormal
 
 class CP:
     
@@ -122,9 +125,12 @@ class CP:
         q_val = np.ceil((1 - self.alpha) * (n + 1)) / n
         return np.quantile(scores, q_val, method="higher")
 
-class DDMPARAMS:
+class PARAMS:
     
-    def __init__(self, E_minus, E_star, E_plus, n_model, u_model, a_model):
+    def __init__(self, normal, abnormal, E_minus, E_star, E_plus, n_model, u_model, a_model):
+        
+        self.normal = normal
+        self.abnormal = abnormal
         self.E_minus = np.array(E_minus)
         self.E_plus = np.array(E_plus)
         self.E_star = np.array(E_star)

@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 import seaborn as sns
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 def heatmap(metrics, filename):
 
@@ -17,33 +18,50 @@ def heatmap(metrics, filename):
 
     # plot using a color palette
     sns.heatmap(df, cmap="YlGnBu", annot=True)
+    plt.yticks(rotation = 0)
+    plt.xticks(rotation = 90)
     plt.savefig(filename+".png", dpi=300)
     plt.show()
     
     metrics = np.round(metrics, 2)
 
     
-def redm(normal, abnormal, filename, scale_n = 0.002, scale_a = 0.0002):
-    E_normal, S_normal, S_n, y_normal = normal
-    E_abnormal, S_abnormal, S_a, y_abnormal = abnormal
+def redm(params, filename, scale_n = 0.002, scale_a = 0.0002):
     
-    fig, axs = plt.subplots(2, 2)
-    y_n_min = min(np.min(y_normal - scale_n * S_normal), np.min(y_normal - scale_n * S_n))
-    y_n_max = max(np.max(y_normal + scale_n * S_normal), np.max(y_normal + scale_n * S_n))
-    axs[0, 0].plot(E_normal, y_normal, '-b', label='regularity')
-    axs[0, 0].set_ylim(y_n_min, y_n_max)
-    axs[0, 0].fill_between(E_normal, y_normal - scale_n * S_normal, y_normal + scale_n * S_normal, alpha=0.6, color='#86cfac', zorder=5)
-    axs[0, 1].plot(E_normal, y_normal, '-b', label='regularity')
-    axs[0, 1].set_ylim(y_n_min, y_n_max)
-    axs[0, 1].fill_between(E_normal, y_normal - scale_n * S_n, y_normal + scale_n * S_n, alpha=0.6, color='#86cfac', zorder=5)
-    axs[1, 0].plot(E_abnormal, y_abnormal, '-k', label='regularity')
-    y_a_min = min(np.min(y_abnormal - scale_a * S_abnormal), np.min(y_abnormal - scale_a * S_a))
-    y_a_max = max(np.max(y_abnormal + scale_a * S_abnormal), np.max(y_abnormal + scale_a * S_a))
-    axs[1, 0].set_ylim(y_a_min, y_a_max)
-    axs[1, 0].fill_between(E_abnormal, y_abnormal - scale_a * S_abnormal, y_abnormal + scale_a * S_abnormal, alpha=0.6, color='#ffcccc', zorder=5)
-    axs[1, 1].plot(E_abnormal, y_abnormal, '-k', label='regularity')
-    axs[1, 1].set_ylim(y_a_min, y_a_max)
-    axs[1, 1].fill_between(E_abnormal, y_abnormal - scale_a * S_a, y_abnormal + scale_a * S_a, alpha=0.6, color='#ffcccc', zorder=5)
+    grid = plt.GridSpec(3, 2, wspace=0.4, hspace=0.6)
+    
+    E_normal, S_normal, S_n, p_normal, _ = params.normal
+    E_abnormal, S_abnormal, S_a, p_abnormal, _ = params.abnormal
+    
+    x = np.concatenate((params.E_minus, params.E_star, params.E_plus))
+    x.sort()
+    y_n = params.n_model(x)*params.dx_minus
+    y_u = params.u_model(x)*params.dx_star
+    y_a = params.a_model(x)*params.dx_plus
+    y_min, y_max = np.min(y_n), np.max(y_n)
+    scaler = MinMaxScaler(feature_range=(y_min, y_max))
+    y_u = scaler.fit_transform(y_u.reshape(-1, 1))
+    y_a = scaler.fit_transform(y_a.reshape(-1, 1))
+    plt.subplot(grid[0, 0:]).plot(x, y_n, color='blue', label ='normality pdf')
+    plt.subplot(grid[0, 0:]).plot(x, y_a, color='red', label = 'abnormality pdf')
+    plt.subplot(grid[0, 0:]).plot(x, y_u, color='gray', label = 'uncertainty pdf')
+    plt.subplot(grid[0, 0:]).legend(loc='best')
+    y_n_min = min(np.min(p_normal - scale_n * S_normal), np.min(p_normal - scale_n * S_n))
+    y_n_max = max(np.max(p_normal + scale_n * S_normal), np.max(p_normal + scale_n * S_n))
+    plt.subplot(grid[1, 0]).plot(E_normal, p_normal, '-b', label='regularity')
+    plt.subplot(grid[1, 0]).set_ylim(y_n_min, y_n_max)
+    plt.subplot(grid[1, 0]).fill_between(E_normal, p_normal - scale_n * S_normal, p_normal + scale_n * S_normal, alpha=0.6, color='#86cfac', zorder=5)
+    plt.subplot(grid[1, 1]).plot(E_normal, p_normal, '-b', label='regularity')
+    plt.subplot(grid[1, 1]).set_ylim(y_n_min, y_n_max)
+    plt.subplot(grid[1, 1]).fill_between(E_normal, p_normal - scale_n * S_n, p_normal + scale_n * S_n, alpha=0.6, color='#86cfac', zorder=5)
+    plt.subplot(grid[2, 0]).plot(E_abnormal, p_abnormal, '-k', label='regularity')
+    y_a_min = min(np.min(p_abnormal - scale_a * S_abnormal), np.min(p_abnormal - scale_a * S_a))
+    y_a_max = max(np.max(p_abnormal + scale_a * S_abnormal), np.max(p_abnormal + scale_a * S_a))
+    plt.subplot(grid[2, 0]).set_ylim(y_a_min, y_a_max)
+    plt.subplot(grid[2, 0]).fill_between(E_abnormal, p_abnormal - scale_a * S_abnormal, p_abnormal + scale_a * S_abnormal, alpha=0.6, color='#ffcccc', zorder=5)
+    plt.subplot(grid[2, 1]).plot(E_abnormal, p_abnormal, '-k', label='regularity')
+    plt.subplot(grid[2, 1]).set_ylim(y_a_min, y_a_max)
+    plt.subplot(grid[2, 1]).fill_between(E_abnormal, p_abnormal - scale_a * S_a, p_abnormal + scale_a * S_a, alpha=0.6, color='#ffcccc', zorder=5)
     plt.savefig(filename+".png", dpi=300 )
     
 def training_loss(cp, edl, mcd, vae, dbname="kdd"):
