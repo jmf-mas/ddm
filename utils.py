@@ -59,7 +59,7 @@ def train(batch_size = 32, lr = 1e-5, w_d = 1e-5, momentum = 0.9, epochs = 5):
         X_val = torch.from_numpy(X_val)
         
         print("training for EDL")
-        for single in range(4, sample_size):
+        for single in range(sample_size):
             print("training for ae_model_"+str(single))
             model_name = "ae_model_"+config+"_"+str(single)
             ae_model = AE(X_train.shape[1], model_name)

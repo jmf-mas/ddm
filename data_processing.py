@@ -112,7 +112,7 @@ def process_raw_data():
     print("processing ids")
     file_id='1e-5ky0j6SG5D3ODxkHxe73W6tKErsxNZ'
     dwn_url='https://drive.google.com/uc?id=' + file_id
-    data_ids = pd.read_csv(dwn_url)
+    data_ids = pd.read_csv("data/02-14-2018.csv")
     data_ids = preprocess_ids_data(data_ids)
     np.savetxt("data/ids.csv", data_ids.values, delimiter=',')
     
@@ -120,10 +120,10 @@ def process_raw_data():
     print("processing nsl")
     file_id='1qdhbdnv258fdw7H4_WIYG3RvM19pCjAQ'
     dwn_url='https://drive.google.com/uc?id=' + file_id
-    data_train = pd.read_csv(dwn_url, header=None)
+    data_train = pd.read_csv("data/NSLTrain.txt", header=None)
     file_id='198OOWc7CQ9nF_AUFVbKT1Smsb-c7FNlM'
     dwn_url='https://drive.google.com/uc?id=' + file_id
-    data_test = pd.read_csv(dwn_url, header=None)
+    data_test = pd.read_csv("data/NSLTest.txt", header=None)
     data_nsl = np.concatenate((data_train.values, data_test.values), axis=0)
     data_nsl = pd.DataFrame(data = data_nsl,  columns = nsl_columns)
     data_nsl.loc[data_nsl['outcome'] == "normal", "outcome"] = 'normal'
@@ -139,7 +139,7 @@ def process_raw_data():
     print("processing kdd")
     file_id='1by815Yv3oUjcW0zwRjVrgfkCuEQ-bxlW'
     dwn_url='https://drive.google.com/uc?id=' + file_id
-    data_kdd = pd.read_csv(dwn_url, header=None)
+    data_kdd = pd.read_csv("data/kdd.txt", header=None)
     data_kdd.columns = kdd_columns
     data_kdd.loc[data_kdd['outcome'] == 'normal.', 'outcome'] = 'normal'
     data_kdd.loc[data_kdd['outcome'] != 'normal', 'outcome'] = 'attack'
