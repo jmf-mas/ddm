@@ -1,8 +1,5 @@
 from utils import train, evaluate
 from pathlib import Path
-from metrics import confusion_matrix_metrics, effect_size, inversion_number
-from metrics import friedman_test_for_4_samples, friedman_test_for_8_samples
-from plots import heatmap, data_set_distribution, redm, training_loss
 import argparse
 from data_processing import process_raw_data, split_and_save_data
 
@@ -11,13 +8,6 @@ directory_model = "checkpoints/"
 directory_data = "data/"
 directory_output = "outputs/"
 
-batch_size = 32
-lr = 1e-5
-w_d = 1e-5        
-momentum = 0.9   
-epochs = 20
-is_train = False
-to_process_data = False
 
 def init():
     Path(directory_model).mkdir(parents=True, exist_ok=True)
