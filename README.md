@@ -1,9 +1,6 @@
 # cuq-ae-redm: a Framework for uncertainty quantification on AEs-based methods for anomaly detection
 > usage: run.py [-h] [-t] [-p] [-b [BATCH_SIZE]] [-l [LEARNING_RATE]] [-w [WEIGHT_DECAY]] [-m [MOMENTUM]] [-e [EPOCHS]]
 
-```
-python run.py -t -p
-```
 > optional arguments:
 
 >> -h, --help            show this help message and exit
@@ -21,3 +18,8 @@ python run.py -t -p
 >>  -m [MOMENTUM], --momentum [MOMENTUM]
 >> 
 >>  -e [EPOCHS], --epochs [EPOCHS]
+>>
+
+```
+python run.py -t -p
+```
