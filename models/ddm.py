@@ -63,7 +63,7 @@ class DDM:
         
         normal_model = lambda x: expon.pdf(x, loc=0, scale=normal_params[1])
         abnormal_model = lambda x: expon.cdf(x, loc=self.eta, scale=abnormal_params[1])
-        uncertain_model = lambda x: norm.pdf(x, loc=uncertain_params[0], scale=uncertain_params[1])
+        uncertain_model = lambda x: norm.pdf(x, loc=self.eta, scale=uncertain_params[1])
         
         
         E_normal, S_normal, y_normal = zip(*sorted(zip(E_normal, S_normal, y_normal), reverse=False))
@@ -111,7 +111,7 @@ class DDM:
         p_abnormal *=dx_a
         normal, abnormal = (E_normal, S_normal, S_n, p_normal, y_normal), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal)
         
-        self.params = PARAMS(normal, abnormal, E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
+        self.params = PARAMS(self.eta, normal, abnormal, E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
         
         return normal, abnormal
 
@@ -127,8 +127,9 @@ class CP:
 
 class PARAMS:
     
-    def __init__(self, normal, abnormal, E_minus, E_star, E_plus, n_model, u_model, a_model):
+    def __init__(self, eta, normal, abnormal, E_minus, E_star, E_plus, n_model, u_model, a_model):
         
+        self.eta = eta
         self.normal = normal
         self.abnormal = abnormal
         self.E_minus = np.array(E_minus)
