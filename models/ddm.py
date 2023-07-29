@@ -45,13 +45,14 @@ class DDM:
         
         delta_minus = self.d*d_minus
         delta_plus = self.d*d_plus
-        
-        ES = np.concatenate((E.reshape(-1, 1), S.reshape(1, -1).T, self.y.reshape(1, -1).T), axis=1)
+        y_index = np.array([i for i in range(len(self.y))])
+        ES = np.concatenate((E.reshape(-1, 1), S.reshape(1, -1).T, self.y.reshape(1, -1).T,
+        y_index.reshape(1, -1).T), axis=1)
         # for plots
         ES_normal = np.array(list(filter(lambda esi: esi[0] < self.eta, ES)))
         ES_abnormal = np.array(list(filter(lambda esi: esi[0] >= self.eta, ES)))
-        E_normal, S_normal, y_normal = ES_normal[:, 0], ES_normal[:, 1], ES_normal[:, 2]
-        E_abnormal, S_abnormal, y_abnormal = ES_abnormal[:, 0], ES_abnormal[:, 1], ES_abnormal[:, 2]
+        E_normal, S_normal, y_normal, y_n_index = ES_normal[:, 0], ES_normal[:, 1], ES_normal[:, 2], ES_normal[:, 3]
+        E_abnormal, S_abnormal, y_abnormal, y_a_index = ES_abnormal[:, 0], ES_abnormal[:, 1], ES_abnormal[:, 2], ES_abnormal[:, 3]
         # for getting distribution parameters
         ES_minus = np.array(list(filter(lambda esi: esi[0] < self.eta - (1-self.phi)*delta_minus, ES)))
         ES_plus = np.array(list(filter(lambda esi: esi[0] > self.eta + (1-self.phi)*delta_plus, ES)))
@@ -109,7 +110,7 @@ class DDM:
         p_abnormal = abnormal_model(E_abnormal)   
         p_normal *=dx_n
         p_abnormal *=dx_a
-        normal, abnormal = (E_normal, S_normal, S_n, p_normal, y_normal), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal)
+        normal, abnormal = (E_normal, S_normal, S_n, p_normal, y_normal, y_n_index), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal, y_a_index)
         
         self.params = PARAMS(self.eta, normal, abnormal, E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
         
@@ -151,6 +152,7 @@ class PARAMS:
         self.dx_minus = np.mean(dx_minus)
         self.dx_plus = np.mean(dx_plus)
         self.dx_star = np.mean(dx_star)
+
     
      
     

@@ -4,6 +4,7 @@ from sklearn.decomposition import PCA
 import seaborn as sns
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+import seaborn as sns
 
 def heatmap(metrics, filename):
 
@@ -25,13 +26,17 @@ def heatmap(metrics, filename):
     
     metrics = np.round(metrics, 2)
 
+def rejection_plot(rejection, filename):
+    sns.barplot(data=rejection, x="metrics", y="count", hue="indicator")
+    plt.savefig("rejection_"+filename+".png", dpi=300)
+    plt.show()
     
 def redm(params, filename, scale_n = 0.002, scale_a = 0.0002):
     
     grid = plt.GridSpec(3, 2, wspace=0.4, hspace=0.6)
     
-    E_normal, S_normal, S_n, p_normal, _ = params.normal
-    E_abnormal, S_abnormal, S_a, p_abnormal, _ = params.abnormal
+    E_normal, S_normal, S_n, p_normal, _, _ = params.normal
+    E_abnormal, S_abnormal, S_a, p_abnormal, _, _ = params.abnormal
     
     x = np.concatenate((params.E_minus, params.E_star, params.E_plus))
     x.sort()

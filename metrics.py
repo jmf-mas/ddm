@@ -83,3 +83,31 @@ def misclassification_rate(y_true, y_pred, E, delta_plus, delta_minus, eta, file
     n_pos_un = len(E[(y_true==1) & (eta-delta_minus <=E)])
     n_neg_un = len(E[(y_true==0) & (E<= eta + delta_plus)])
     return n_pos_un/n_pos, n_neg_un/n_neg, n_mis_un/n_mis
+
+def false_alarms_metrics(S, y_pred, y_i, y_test, q=50, dec = 4):
+    n = len(y_test)
+    std_threshold = np.percentile(S, q)
+    y_pred = np.array(y_pred)
+    uncertainty = (S > std_threshold).astype(int)
+    w_rej = np.count_nonzero((y_pred[y_i] == y_test[y_i]) & (uncertainty == True))/n
+    r_rej = np.count_nonzero((y_pred[y_i] != y_test[y_i]) & (uncertainty == True))/n
+    w_acc = np.count_nonzero((y_pred[y_i] != y_test[y_i]) & (uncertainty == False))/n
+    r_acc = np.count_nonzero((y_pred[y_i] == y_test[y_i]) & (uncertainty == False))/n
+    w_rej = np.round(w_rej, dec)
+    w_acc = np.round(w_acc, dec)
+    r_rej = np.round(r_rej, dec)
+    r_acc = np.round(r_acc, dec)
+    return {"WREJECT":w_rej*100, "WACCEPT":w_acc*100, "RREJECT":r_rej*100, "RACCEPT":r_acc*100}
+        
+def false_alarms(S, S_p, y_pred, y_i, y_test, q=50, dec = 4):
+    columns = ["count", "metrics", "indicator"]
+    f = false_alarms_metrics(S, y_pred, y_i, y_test, q=q, dec = dec)
+    f_addon = false_alarms_metrics(S_p, y_pred, y_i, y_test, q=q, dec = dec)
+    rejection_info = []
+    rejection_info.extend([[f[key], key, "without addon"] for key in f])
+    rejection_info.extend([[f_addon[key], key, "with addon"] for key in f_addon])
+    rejection_info = pd.DataFrame(rejection_info, columns=columns)
+    return rejection_info
+
+    
+    
