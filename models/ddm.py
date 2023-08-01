@@ -65,6 +65,7 @@ class DDM:
         normal_model = lambda x: expon.pdf(x, loc=0, scale=normal_params[1])
         abnormal_model = lambda x: expon.cdf(x, loc=self.eta, scale=abnormal_params[1])
         uncertain_model = lambda x: norm.pdf(x, loc=self.eta, scale=uncertain_params[1])
+        anomality_cdf = lambda x: norm.cdf(x, loc=self.eta, scale=uncertain_params[1])
         
         
         E_normal, S_normal, y_normal = zip(*sorted(zip(E_normal, S_normal, y_normal), reverse=False))
@@ -81,6 +82,7 @@ class DDM:
         
         y_n_n, y_a_n, y_u_n = normal_model(E_normal), abnormal_model(E_normal), uncertain_model(E_normal)
         y_n_a, y_a_a, y_u_a = normal_model(E_abnormal), abnormal_model(E_abnormal), uncertain_model(E_abnormal)
+
         # making probability distribution
         dx_n = [abs(E_normal[i-1]-E_normal[i]) for i in range(len(E_normal))]
         dx_n = np.mean(dx_n)
@@ -112,7 +114,7 @@ class DDM:
         p_abnormal *=dx_a
         normal, abnormal = (E_normal, S_normal, S_n, p_normal, y_normal, y_n_index), (E_abnormal, S_abnormal, S_a, p_abnormal, y_abnormal, y_a_index)
         
-        self.params = PARAMS(self.eta, normal, abnormal, E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
+        self.params = PARAMS(self.eta, anomality_cdf, normal, abnormal, E_minus, E_star, E_plus, normal_model, uncertain_model, abnormal_model)
         
         return normal, abnormal
 
@@ -128,9 +130,10 @@ class CP:
 
 class PARAMS:
     
-    def __init__(self, eta, normal, abnormal, E_minus, E_star, E_plus, n_model, u_model, a_model):
+    def __init__(self, eta, cdf, normal, abnormal, E_minus, E_star, E_plus, n_model, u_model, a_model):
         
         self.eta = eta
+        self.cdf = cdf
         self.normal = normal
         self.abnormal = abnormal
         self.E_minus = np.array(E_minus)

@@ -31,9 +31,9 @@ def rejection_plot(rejection, filename):
     plt.savefig("rejection_"+filename+".png", dpi=300)
     plt.show()
     
-def redm(params, filename, scale_n = 0.002, scale_a = 0.0002):
+def redm(params, filename, scale_n = 0.002, scale_a = 0.0002, s = 500000):
     
-    grid = plt.GridSpec(3, 2, wspace=0.4, hspace=0.6)
+    grid = plt.GridSpec(4, 2, wspace=0.4, hspace=0.6)
     
     E_normal, S_normal, S_n, p_normal, _, _ = params.normal
     E_abnormal, S_abnormal, S_a, p_abnormal, _, _ = params.abnormal
@@ -72,6 +72,25 @@ def redm(params, filename, scale_n = 0.002, scale_a = 0.0002):
     plt.subplot(grid[2, 1]).set_ylim(y_a_min, y_a_max)
     plt.subplot(grid[2, 1]).axvline(x = params.eta, color = 'red', lw=0.5)
     plt.subplot(grid[2, 1]).fill_between(E_abnormal, p_abnormal - scale_a * S_a, p_abnormal + scale_a * S_a, alpha=0.6, color='#ffcccc', zorder=5)
+    x = list(E_normal)[:]
+    x.extend(list(E_abnormal))
+    cdf = params.cdf(x)
+    plt.subplot(grid[3, 0]).plot(x, cdf, '-k', label='regularity')
+    S = list(S_normal)[:]
+    S.extend(list(S_abnormal))
+    S_p = list(S_n)[:]
+    S_p.extend(list(S_a))
+    S, S_p = np.array(S), np.array(S_p)
+    scale_a *=s
+    y_a_min = min(np.min(cdf - scale_a * S), np.min(cdf - scale_a * S_p))
+    y_a_max = max(np.max(cdf + scale_a * S), np.max(cdf + scale_a * S_p))
+    plt.subplot(grid[3, 0]).set_ylim(y_a_min, y_a_max)
+    plt.subplot(grid[3, 0]).fill_between(x, cdf - scale_a * S, cdf + scale_a * S, alpha=0.6, color='#ffcccc', zorder=5)
+    plt.subplot(grid[3, 0]).axvline(x = params.eta, color = 'red', lw=0.5)
+    plt.subplot(grid[3, 1]).plot(x, cdf, '-k', label='regularity')
+    plt.subplot(grid[3, 1]).set_ylim(y_a_min, y_a_max)
+    plt.subplot(grid[3, 1]).axvline(x = params.eta, color = 'red', lw=0.5)
+    plt.subplot(grid[3, 1]).fill_between(x, cdf - scale_a * S_p, cdf + scale_a * S_p, alpha=0.6, color='#ffcccc', zorder=5)
     plt.savefig(filename+".png", dpi=300 )
     
 def training_loss(cp, edl, mcd, vae, dbname="kdd"):
