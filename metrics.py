@@ -104,8 +104,8 @@ def false_alarms(S, S_p, y_pred, y_i, y_test, q=50, dec = 4):
     f = false_alarms_metrics(S, y_pred, y_i, y_test, q=q, dec = dec)
     f_addon = false_alarms_metrics(S_p, y_pred, y_i, y_test, q=q, dec = dec)
     rejection_info = []
-    rejection_info.extend([[f[key], key, "without addon"] for key in f])
-    rejection_info.extend([[f_addon[key], key, "with addon"] for key in f_addon])
+    rejection_info.extend([[f[key], key, "calibrated"] for key in f])
+    rejection_info.extend([[f_addon[key], key, "uncalibrated"] for key in f_addon])
     rejection_info = pd.DataFrame(rejection_info, columns=columns)
     return rejection_info
 

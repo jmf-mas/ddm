@@ -32,22 +32,30 @@ def rejection_plot(S, S_p, y_edl_pred_0, y_i, y_test, filename, dec = 4):
     qs = np.array(range(5, 85, 5))
     qs = qs.reshape((4, 4))
     m,n = qs.shape
-    fig, axes = plt.subplots(4, 4, figsize=(15, 5), sharey=True)
-    fig.subplots_adjust(hspace=0.40, wspace=0.125)
+    fig, axes = plt.subplots(4, 4, figsize=(8, 5), sharey=True)
+    fig.subplots_adjust(hspace=0.50, wspace=0.125)
+    sns.set_style(rc = {'axes.facecolor': '#FFFFFF'})
     for i in range(m):
         for j in range(n):
             rejection = false_alarms(S, S_p, y_edl_pred_0, y_i, y_test, q=qs[i, j], dec = dec)
             sns.barplot(ax=axes[i, j], data=rejection, x="metrics", y="count", hue="indicator")
-            axes[i, j].set_title("$\gamma=$"+str(qs[i, j]))
-            axes[i, j].legend(loc='best', fontsize=4.5)
+            axes[i, j].set_title("$\gamma=$"+str(qs[i, j]),  fontsize=10)
+            axes[i, j].legend(loc='best', fontsize=7)
             axes[i, j].set(xlabel=None)
+            axes[i, j].set_ylabel("Count", fontsize=10)
+            if i==0 and j==0:
+                handles, labels = axes[i, j].get_legend_handles_labels()
+            axes[i, j].get_legend().remove()
+            
             if j!=0:
                 axes[i, j].set(ylabel=None)
             if i<3:
                 axes[i, j].tick_params(bottom=False)
                 axes[i, j].set(xticklabels=[])
             else:
-                axes[i, j].set_xticklabels(axes[i, j].get_xticklabels(), rotation=45)
+                axes[i, j].set_xticklabels(axes[i, j].get_xticklabels(), rotation=45, fontsize=10)
+    
+    fig.legend(handles, labels, loc="upper left", bbox_to_anchor=(.65,.98), fontsize=12)
     plt.savefig("rejection_"+filename+".png", dpi=300)
     plt.show()
     
